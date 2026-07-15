@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>給与計算管理 | 星狼</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0d0d0d; color: #e0e0e0; font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif; font-size: 14px; min-height: 100vh; }
+
+    /* Header */
+    .site-header { background: #111; border-bottom: 1px solid #2a2a2a; padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
+    .site-header h1 { font-size: 18px; font-weight: 600; color: #c9a84c; letter-spacing: .05em; }
+    .site-header .subtitle { font-size: 12px; color: #666; }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+
+    /* Tabs */
+    .tab-nav { display: flex; border-bottom: 2px solid #2a2a2a; margin-bottom: 24px; }
+    .tab-btn { padding: 10px 24px; background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -2px; color: #888; font-size: 14px; cursor: pointer; transition: color .2s, border-color .2s; }
+    .tab-btn:hover { color: #ccc; }
+    .tab-btn.active { color: #c9a84c; border-bottom-color: #c9a84c; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Cards */
+    .card { background: #161616; border: 1px solid #2a2a2a; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    .card-title { font-size: 13px; font-weight: 600; color: #c9a84c; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #2a2a2a; display: flex; align-items: center; gap: 10px; }
+
+    /* Store buttons */
+    .store-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    .store-btn { padding: 8px 20px; border: 1px solid #3a3a3a; border-radius: 20px; background: #1a1a1a; color: #aaa; cursor: pointer; font-size: 14px; transition: all .2s; }
+    .store-btn:hover { border-color: #c9a84c; color: #c9a84c; }
+    .store-btn.active { background: #c9a84c; border-color: #c9a84c; color: #111; font-weight: 600; }
+
+    /* Drop zones */
+    .upload-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+    .drop-zone { background: #1a1a1a; border: 1px dashed #3a3a3a; border-radius: 6px; padding: 14px; cursor: pointer; transition: border-color .15s, background .15s; }
+    .drop-zone:hover, .drop-zone.drag-over { border-color: #c9a84c; background: #1c1a10; border-style: solid; }
+    .drop-zone.has-file { border-color: #2a6a2a; background: #101a10; border-style: solid; }
+    .drop-zone.db-loaded { border-color: #2a4a6a; background: #10141a; border-style: solid; }
+    .dz-label { font-size: 12px; color: #999; margin-bottom: 6px; display: block; }
+    .dz-fname { font-size: 11px; color: #666; margin-top: 6px; word-break: break-all; min-height: 14px; }
+    .drop-zone.has-file .dz-fname { color: #55dd55; }
+    .drop-zone.db-loaded .dz-fname { color: #5599dd; }
+    .dz-hint { font-size: 11px; color: #555; margin-top: 6px; text-align: center; }
+    .drop-zone.has-file .dz-hint, .drop-zone.db-loaded .dz-hint { display: none; }
+
+    /* Badges */
+    .badge { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 6px; vertical-align: middle; font-weight: 700; }
+    .badge-req { background: #4a1a1a; color: #e05555; border: 1px solid #6a2a2a; }
+    .badge-opt { background: #1a3a1a; color: #55aa55; border: 1px solid #2a5a2a; }
+    .badge-ok  { background: #1a4a1a; color: #55dd55; border: 1px solid #2a6a2a; }
+    .badge-db  { background: #1a2a4a; color: #5599dd; border: 1px solid #2a4a6a; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .dot-ok   { background: #44cc44; }
+    .dot-none { background: #cc4444; }
+    .dot-opt  { background: #888; }
+    .dot-db   { background: #5599dd; }
+
+    /* Calc button */
+    .calc-btn { display: block; width: 100%; padding: 14px; background: #c9a84c; color: #111; border: none; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; transition: background .2s; letter-spacing: .05em; }
+    .calc-btn:hover:not(:disabled) { background: #e0bf60; }
+    .calc-btn:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #1a3a1a; color: #55dd55; border: 1px solid #2a6a2a; border-radius: 6px; padding: 12px 18px; font-size: 13px; z-index: 9999; display: none; animation: fadeIn .2s; }
+    .toast.error { background: #3a1a1a; color: #dd5555; border-color: #6a2a2a; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Error box */
+    .error-box { background: #2a0a0a; border: 1px solid #6a2a2a; color: #e05555; border-radius: 6px; padding: 14px; margin-bottom: 16px; display: none; }
+    .spinner { display: none; text-align: center; padding: 20px; color: #888; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner::before { content: ''; display: inline-block; width: 24px; height: 24px; border: 3px solid #333; border-top-color: #c9a84c; border-radius: 50%; animation: spin .8s linear infinite; vertical-align: middle; margin-right: 10px; }
+
+    /* P&L Table */
+    #results { display: none; }
+    .pnl { font-size: 14px; }
+    .pnl-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #1e1e1e; }
+    .pnl-row:last-child { border-bottom: none; }
+    .pnl-row.indent { padding-left: 20px; }
+    .pnl-row.indent .pnl-lbl { color: #888; font-size: 13px; }
+    .pnl-row.subtotal { border-top: 1px solid #444; margin-top: 4px; padding-top: 7px; }
+    .pnl-row.total-row { font-weight: 700; font-size: 15px; border-top: 2px solid #555; padding-top: 10px; margin-top: 4px; }
+    .pnl-row.total-row .pnl-val { color: #c9a84c; }
+    .pnl-row.deduction .pnl-val { color: #e05555; }
+    .pnl-row.note .pnl-lbl, .pnl-row.note .pnl-val { color: #666; font-size: 12px; font-style: italic; }
+    .pnl-divider { border-top: 2px solid #3a3a3a; margin: 12px 0; }
+    .pnl-lbl { flex: 1; }
+    .pnl-val { text-align: right; min-width: 140px; font-variant-numeric: tabular-nums; }
+
+    /* Result tables */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th { background: #1e1e1e; color: #c9a84c; padding: 10px 12px; text-align: right; font-weight: 600; border-bottom: 1px solid #333; white-space: nowrap; }
+    thead th:first-child { text-align: left; }
+    tbody tr:nth-child(even) { background: #161616; }
+    tbody tr:hover { background: #1e1e2a; }
+    tbody tr.retired-row { opacity: 0.45; }
+    tbody td { padding: 9px 12px; border-bottom: 1px solid #222; text-align: right; white-space: nowrap; }
+    tbody td:first-child { text-align: left; color: #ddd; }
+    .rank-badge { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 10px; margin-left: 6px; background: #2a2a2a; color: #999; }
+    .rank-店長   { background: #4a2a4a; color: #dd99dd; }
+    .rank-プラチナ { background: #3a3a4a; color: #aaaadd; }
+    .rank-ブラック { background: #2a2a2a; color: #aaa; }
+    .rank-ゴールド { background: #4a3a1a; color: #ddbb44; }
+    .rank-シルバー { background: #2a3a3a; color: #88bbbb; }
+    .rank-ブロンズ { background: #3a2a1a; color: #cc8844; }
+    .rank-研修    { background: #1a2a1a; color: #88aa88; }
+    .rank-内勤    { background: #1a1a2a; color: #8888aa; }
+
+    /* Master management tables */
+    .cell-input { background: #111; border: 1px solid #333; border-radius: 3px; color: #e0e0e0; padding: 4px 6px; font-size: 12px; width: 100%; }
+    .cell-input:focus { outline: none; border-color: #c9a84c; }
+    .cell-select { background: #111; border: 1px solid #333; border-radius: 3px; color: #e0e0e0; padding: 4px 6px; font-size: 12px; width: 100%; }
+    .cell-select:focus { outline: none; border-color: #c9a84c; }
+    .del-row-btn { background: #3a1a1a; border: 1px solid #6a2a2a; color: #dd5555; border-radius: 3px; padding: 3px 8px; font-size: 11px; cursor: pointer; }
+    .del-row-btn:hover { background: #5a1a1a; }
+    .action-btn { background: #1a1a2a; border: 1px solid #3a3a5a; color: #8888cc; border-radius: 4px; padding: 7px 14px; font-size: 13px; cursor: pointer; }
+    .action-btn:hover { border-color: #c9a84c; color: #c9a84c; }
+    .save-db-btn { background: #c9a84c; border: none; color: #111; border-radius: 4px; padding: 7px 16px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .save-db-btn:hover { background: #e0bf60; }
+    .import-btn { background: #1a2a1a; border: 1px solid #2a5a2a; color: #55aa55; border-radius: 4px; padding: 4px 10px; font-size: 12px; cursor: pointer; margin-left: auto; }
+    .import-btn:hover { border-color: #55dd55; color: #55dd55; }
+    .tbl-actions { margin-top: 12px; display: flex; gap: 8px; align-items: center; }
+
+    /* History tab */
+    .period-filter { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .period-filter label { font-size: 12px; color: #888; }
+    .period-filter select, .period-filter input[type="month"] {
+      background: #1a1a1a; border: 1px solid #3a3a3a; color: #e0e0e0; border-radius: 4px; padding: 6px 10px; font-size: 13px;
+    }
+    .hist-record { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: border-color .15s; }
+    .hist-record:hover { border-color: #c9a84c; }
+    .hist-record.active { border-color: #c9a84c; background: #1e1a10; }
+    .hist-period { font-size: 13px; font-weight: 600; color: #c9a84c; min-width: 180px; }
+    .hist-store  { font-size: 12px; color: #888; min-width: 60px; }
+    .hist-type   { font-size: 11px; padding: 2px 6px; border-radius: 3px; }
+    .hist-type.monthly  { background: #2a3a1a; color: #88cc44; border: 1px solid #4a6a2a; }
+    .hist-type.halfmonth{ background: #1a2a3a; color: #44aacc; border: 1px solid #2a4a6a; }
+    .hist-salary { margin-left: auto; font-size: 13px; font-weight: 600; color: #e0e0e0; }
+    .hist-del { background: none; border: none; color: #555; font-size: 16px; cursor: pointer; padding: 0 4px; }
+    .hist-del:hover { color: #dd5555; }
+    .monthly-badge { display: inline-block; background: #2a2a4a; color: #8888cc; border: 1px solid #4a4a6a; font-size: 11px; padding: 2px 8px; border-radius: 3px; }
+
+    /* Checkbox */
+    .check-label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #aaa; cursor: pointer; user-select: none; }
+    .check-label input[type="checkbox"] { width: 14px; height: 14px; cursor: pointer; }
+
+    /* Responsive: narrow screens */
+    @media (max-width: 600px) {
+      .upload-grid { grid-template-columns: 1fr; }
+      .hist-record { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <h1>給与計算管理</h1>
+  <span class="subtitle">星狼 Admin</span>
+</header>
+
+<div class="container">
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tab="calc">給与計算</button>
+    <button class="tab-btn" data-tab="master">マスタ管理</button>
+    <button class="tab-btn" data-tab="history">給与履歴</button>
+  </nav>
+
+  <!-- ============================
+       Tab: 給与計算
+  ============================= -->
+  <div id="tab-calc" class="tab-panel active">
+
+    <div class="card">
+      <div class="card-title">店舗選択</div>
+      <div class="store-group">
+        <button class="store-btn active" data-store="東京">東京</button>
+        <button class="store-btn" data-store="名古屋">名古屋</button>
+        <button class="store-btn" data-store="大阪">大阪</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">CSVアップロード</div>
+      <div class="upload-grid">
+
+        <!-- 売上 -->
+        <div>
+          <div class="drop-zone" id="zone-sales">
+            <span class="dz-label">
+              <span class="dot dot-none" id="dot-sales"></span>バリエーション別売上
+              <span class="badge badge-req" id="badge-sales">必須</span>
+            </span>
+            <div class="dz-fname" id="fname-sales">未選択</div>
+            <div class="dz-hint">クリックまたはドロップ</div>
+          </div>
+          <input type="file" id="file-sales" accept=".csv" style="display:none">
+        </div>
+
+        <!-- 人件費 -->
+        <div>
+          <div class="drop-zone" id="zone-wage">
+            <span class="dz-label">
+              <span class="dot dot-none" id="dot-wage"></span>概算人件費シミュレーション
+              <span class="badge badge-req" id="badge-wage">必須</span>
+            </span>
+            <div class="dz-fname" id="fname-wage">未選択</div>
+            <div class="dz-hint">クリックまたはドロップ</div>
+          </div>
+          <input type="file" id="file-wage" accept=".csv" style="display:none">
+        </div>
+
+        <!-- ランク -->
+        <div>
+          <div class="drop-zone" id="zone-rank">
+            <span class="dz-label">
+              <span class="dot dot-opt" id="dot-rank"></span>キャストランク
+              <span class="badge badge-opt" id="badge-rank">任意</span>
+            </span>
+            <div class="dz-fname" id="fname-rank">DB未登録</div>
+            <div class="dz-hint">クリックまたはドロップ</div>
+          </div>
+          <input type="file" id="file-rank" accept=".csv" style="display:none">
+        </div>
+
+        <!-- キャスト -->
+        <div>
+          <div class="drop-zone" id="zone-cast">
+            <span class="dz-label">
+              <span class="dot dot-none" id="dot-cast"></span>キャストマスタ（全店舗）
+              <span class="badge badge-req" id="badge-cast">必須</span>
+            </span>
+            <div class="dz-fname" id="fname-cast">未選択</div>
+            <div class="dz-hint">クリックまたはドロップ</div>
+          </div>
+          <input type="file" id="file-cast" accept=".csv" style="display:none">
+        </div>
+
+      </div>
+      <div style="margin-top:14px">
+        <label class="check-label">
+          <input type="checkbox" id="include-retired">
+          退職したキャストを計算に含める
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="error-box" id="error-box"></div>
+      <button class="calc-btn" id="calc-btn" disabled>必須CSVをアップロードしてください</button>
+      <div class="spinner" id="spinner">計算中...</div>
+    </div>
+
+    <div id="results">
+
+      <!-- 損益計算書 -->
+      <div class="card">
+        <div class="card-title">
+          損益計算書
+          <span id="result-period" style="font-size:12px;color:#888;font-weight:400;text-transform:none;letter-spacing:0"></span>
+        </div>
+        <div class="pnl">
+          <div class="pnl-row"><span class="pnl-lbl" style="font-weight:600">売上高（税込）</span></div>
+          <div class="pnl-row indent">
+            <span class="pnl-lbl">遠隔販売</span>
+            <span class="pnl-val" id="pnl-remote">—</span>
+          </div>
+          <div class="pnl-row indent">
+            <span class="pnl-lbl">直接・その他</span>
+            <span class="pnl-val" id="pnl-direct">—</span>
+          </div>
+          <div class="pnl-row subtotal">
+            <span class="pnl-lbl">売上高 合計</span>
+            <span class="pnl-val" id="pnl-total-sales">—</span>
+          </div>
+          <div class="pnl-row note">
+            <span class="pnl-lbl">　うち消費税（内税分）</span>
+            <span class="pnl-val" id="pnl-tax">—</span>
+          </div>
+          <div class="pnl-divider"></div>
+          <div class="pnl-row subtotal">
+            <span class="pnl-lbl">売上総利益（粗利）</span>
+            <span class="pnl-val" id="pnl-gross">—</span>
+          </div>
+          <div class="pnl-row deduction">
+            <span class="pnl-lbl">人件費</span>
+            <span class="pnl-val" id="pnl-labor">—</span>
+          </div>
+          <div class="pnl-divider"></div>
+          <div class="pnl-row total-row">
+            <span class="pnl-lbl">貢献利益</span>
+            <span class="pnl-val" id="pnl-contribution">—</span>
+          </div>
+          <div class="pnl-row" style="padding-top:12px">
+            <span class="pnl-lbl" style="color:#888">労働時間</span>
+            <span class="pnl-val" id="pnl-hours" style="color:#888">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 給与明細 -->
+      <div class="card">
+        <div class="card-title">
+          給与明細
+          <label class="check-label" style="margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0">
+            <input type="checkbox" id="show-retired-calc"> 退職したキャストを表示
+          </label>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>キャスト名</th><th>支払額</th><th>基本給</th><th>バック</th><th>通勤手当</th></tr>
+            </thead>
+            <tbody id="salary-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- キャスト別売上 -->
+      <div class="card">
+        <div class="card-title">キャスト別売上</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>キャスト名</th><th>販売総売上</th><th>粗利総額</th></tr>
+            </thead>
+            <tbody id="cast-sales-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /results -->
+  </div><!-- /tab-calc -->
+
+
+  <!-- ============================
+       Tab: マスタ管理
+  ============================= -->
+  <div id="tab-master" class="tab-panel">
+
+    <!-- キャストランク -->
+    <div class="card">
+      <div class="card-title">
+        キャストランク
+        <button class="import-btn" id="rank-import-btn">CSV読込</button>
+        <input type="file" id="rank-import-file" accept=".csv" style="display:none">
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th style="text-align:left;width:35%">ランク名</th><th>時給（円）</th><th>バック率</th><th style="width:50px"></th></tr>
+          </thead>
+          <tbody id="rank-edit-tbody"></tbody>
+        </table>
+      </div>
+      <div class="tbl-actions">
+        <button class="action-btn" id="rank-add-btn">＋ 行追加</button>
+        <button class="save-db-btn" id="rank-save-btn">DBに保存</button>
+      </div>
+    </div>
+
+    <!-- キャストマスタ -->
+    <div class="card">
+      <div class="card-title">
+        キャストマスタ
+        <button class="import-btn" id="cast-import-btn">CSV読込</button>
+        <input type="file" id="cast-import-file" accept=".csv" style="display:none">
+      </div>
+      <div style="margin-bottom:10px;display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+        <div class="store-group" id="master-store-filter">
+          <button class="store-btn active" data-store="">全店舗</button>
+          <button class="store-btn" data-store="東京">東京</button>
+          <button class="store-btn" data-store="名古屋">名古屋</button>
+          <button class="store-btn" data-store="大阪">大阪</button>
+        </div>
+        <label class="check-label">
+          <input type="checkbox" id="show-retired-master"> 退職済みも表示
+        </label>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align:left;width:14%">キャスト名</th>
+              <th style="text-align:left;width:18%">Airシフト</th>
+              <th style="width:13%">ランク</th>
+              <th style="width:10%">店舗</th>
+              <th style="width:7%">退職</th>
+              <th style="width:40px"></th>
+            </tr>
+          </thead>
+          <tbody id="cast-edit-tbody"></tbody>
+        </table>
+      </div>
+      <div class="tbl-actions">
+        <button class="action-btn" id="cast-add-btn">＋ 行追加</button>
+        <button class="save-db-btn" id="cast-save-btn">DBに保存</button>
+      </div>
+    </div>
+
+  </div><!-- /tab-master -->
+
+
+  <!-- ============================
+       Tab: 給与履歴
+  ============================= -->
+  <div id="tab-history" class="tab-panel">
+
+    <div class="card">
+      <div class="card-title">履歴フィルター</div>
+      <div class="period-filter">
+        <label>店舗</label>
+        <div class="store-group" id="hist-store-filter">
+          <button class="store-btn active" data-store="">全店舗</button>
+          <button class="store-btn" data-store="東京">東京</button>
+          <button class="store-btn" data-store="名古屋">名古屋</button>
+          <button class="store-btn" data-store="大阪">大阪</button>
+        </div>
+        <label>年月</label>
+        <input type="month" id="hist-month-input" style="color-scheme:dark">
+      </div>
+    </div>
+
+    <!-- 月次集計 (選択した年月がある場合) -->
+    <div id="monthly-summary-card" class="card" style="display:none">
+      <div class="card-title">
+        月次集計
+        <span id="monthly-summary-label" class="monthly-badge" style="font-weight:400;text-transform:none;letter-spacing:0"></span>
+      </div>
+      <!-- P&L -->
+      <div class="pnl" id="monthly-pnl"></div>
+      <!-- Cast table -->
+      <div class="table-wrap" style="margin-top:20px">
+        <table>
+          <thead>
+            <tr><th>キャスト名</th><th>支払額</th><th>基本給</th><th>バック</th><th>販売総売上</th><th>粗利総額</th></tr>
+          </thead>
+          <tbody id="monthly-cast-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 個別レコード一覧 -->
+    <div class="card">
+      <div class="card-title">保存済みレコード</div>
+      <div id="hist-list">
+        <p style="color:#666;font-size:13px">レコードがありません。</p>
+      </div>
+    </div>
+
+    <!-- 選択レコード詳細 -->
+    <div id="hist-detail-card" class="card" style="display:none">
+      <div class="card-title" id="hist-detail-title">詳細</div>
+      <div class="pnl" id="hist-detail-pnl"></div>
+      <div class="table-wrap" style="margin-top:20px">
+        <table>
+          <thead>
+            <tr><th>キャスト名</th><th>支払額</th><th>基本給</th><th>バック</th><th>販売総売上</th><th>粗利総額</th></tr>
+          </thead>
+          <tbody id="hist-detail-cast-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /tab-history -->
+
+</div><!-- /container -->
+
+<div class="toast" id="toast"></div>
+
+<script src="js/db.js"></script>
+<script src="js/salary_calc.js"></script>
+<script>
+'use strict';
+
+// ===========================
+// Shared state & utils
+// ===========================
+const state = {
+  store:    '東京',
+  files:    { sales: null, wage: null, rank: null, cast: null },
+  rankDB:   [],
+  castDB:   [],
+  histSelected: null,
+};
+const REQUIRED = ['sales', 'wage', 'cast'];
+
+function fmt(n)  { return typeof n === 'number' ? Math.round(n).toLocaleString('ja-JP') + '円' : String(n); }
+function fmtN(n) { return typeof n === 'number' ? Math.round(n).toLocaleString('ja-JP') : String(n); }
+function esc(s)  { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '');
+  t.style.display = 'block';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.display = 'none'; }, 3000);
+}
+
+function rankClass(rank) {
+  const m = {'店長':'rank-店長','プラチナ':'rank-プラチナ','ブラック':'rank-ブラック',
+             'ゴールド':'rank-ゴールド','シルバー':'rank-シルバー','ブロンズ':'rank-ブロンズ',
+             '研修':'rank-研修','内勤':'rank-内勤'};
+  return m[rank] || '';
+}
+
+function fmtDateRange(start, end) {
+  if (!start || !end) return '';
+  const f = d => `${d.slice(0,4)}/${d.slice(4,6)}/${d.slice(6,8)}`;
+  return f(start) + ' 〜 ' + f(end);
+}
+
+// ===========================
+// Tab switching
+// ===========================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'history') loadHistory();
+  });
+});
+
+// ===========================
+// Store buttons (shared helper)
+// ===========================
+function setupStoreButtons(groupId, callback) {
+  document.querySelectorAll(`#${groupId} .store-btn`).forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll(`#${groupId} .store-btn`).forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      callback(btn.dataset.store);
+    });
+  });
+}
+
+setupStoreButtons('tab-calc .store-group', s => { state.store = s || '東京'; });
+setupStoreButtons('master-store-filter',   s => renderCastTable(s));
+setupStoreButtons('hist-store-filter',     s => loadHistory());
+
+// Calc tab doesn't have a group id on the store-group; wire it manually
+document.querySelectorAll('#tab-calc .store-group .store-btn').forEach(btn => {
+  btn.addEventListener('click', () => { state.store = btn.dataset.store; });
+});
+
+// ===========================
+// Drop zone setup (calc tab)
+// ===========================
+function setFile(key, file) {
+  state.files[key] = file || null;
+  const zone  = document.getElementById('zone-' + key);
+  const dot   = document.getElementById('dot-' + key);
+  const fname = document.getElementById('fname-' + key);
+  const badge = document.getElementById('badge-' + key);
+  if (file) {
+    zone.classList.add('has-file'); zone.classList.remove('db-loaded');
+    dot.className     = 'dot dot-ok';
+    fname.textContent = file.name;
+    if (REQUIRED.includes(key)) { badge.className = 'badge badge-ok'; badge.textContent = '✓'; }
+  } else {
+    zone.classList.remove('has-file');
+    updateZoneFromDB(key);
+  }
+  checkReady();
+}
+
+function updateZoneFromDB(key) {
+  const zone  = document.getElementById('zone-' + key);
+  const dot   = document.getElementById('dot-' + key);
+  const fname = document.getElementById('fname-' + key);
+  const badge = document.getElementById('badge-' + key);
+  if (key === 'cast' && state.castDB.length > 0) {
+    zone.classList.add('db-loaded');
+    dot.className     = 'dot dot-db';
+    fname.textContent = `DB: ${state.castDB.length}名登録済み`;
+    badge.className   = 'badge badge-db'; badge.textContent = 'DB';
+  } else if (key === 'rank' && state.rankDB.length > 0) {
+    zone.classList.add('db-loaded');
+    dot.className     = 'dot dot-db';
+    fname.textContent = `DB: ${state.rankDB.length}ランク登録済み`;
+    badge.className   = 'badge badge-opt'; badge.textContent = 'DB';
+  } else if (key === 'rank') {
+    zone.classList.remove('db-loaded');
+    dot.className     = 'dot dot-opt';
+    fname.textContent = 'デフォルト使用';
+    badge.className   = 'badge badge-opt'; badge.textContent = '任意';
+  } else {
+    zone.classList.remove('db-loaded');
+    dot.className     = 'dot dot-none';
+    fname.textContent = '未選択';
+    if (badge) { badge.className = 'badge badge-req'; badge.textContent = '必須'; }
+  }
+}
+
+function checkReady() {
+  const ready = REQUIRED.every(k =>
+    state.files[k] !== null || (k === 'cast' && state.castDB.length > 0)
+  );
+  const btn = document.getElementById('calc-btn');
+  btn.disabled    = !ready;
+  btn.textContent = ready ? '計算実行' : '必須CSVをアップロードしてください';
+}
+
+['sales', 'wage', 'rank', 'cast'].forEach(key => {
+  const zone  = document.getElementById('zone-' + key);
+  const input = document.getElementById('file-' + key);
+  zone.addEventListener('click',     () => input.click());
+  zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', e => { if (!zone.contains(e.relatedTarget)) zone.classList.remove('drag-over'); });
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0]; if (f) setFile(key, f);
+  });
+  input.addEventListener('change', e => { setFile(key, e.target.files[0] || null); input.value = ''; });
+});
+
+// ===========================
+// Calculation
+// ===========================
+document.getElementById('calc-btn').addEventListener('click', async () => {
+  const errBox = document.getElementById('error-box');
+  errBox.style.display = 'none';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('spinner').style.display = 'block';
+  document.getElementById('calc-btn').disabled = true;
+
+  try {
+    const salesRows = await parseShiftJisCSV(state.files.sales);
+    const wageRows  = await parseUtf8CSV(state.files.wage);
+
+    // Cast: CSV override > DB > error
+    let castRows;
+    if (state.files.cast) {
+      castRows = await parseShiftJisCSV(state.files.cast);
+    } else if (state.castDB.length > 0) {
+      castRows = state.castDB;
+    } else {
+      throw new Error('キャストマスタが未登録です。CSVをアップロードするかマスタ管理タブで登録してください。');
+    }
+
+    // Rank: CSV override > DB > default
+    let rankRows;
+    if (state.files.rank) {
+      rankRows = await parseShiftJisCSV(state.files.rank);
+    } else if (state.rankDB.length > 0) {
+      rankRows = state.rankDB;
+    } else {
+      rankRows = getDefaultRanks();
+    }
+
+    // Filter retired casts if checkbox unchecked
+    const includeRetired = document.getElementById('include-retired').checked;
+    if (!includeRetired) {
+      const activeCast = castRows.filter(c => c['退職'] !== 'true' && c['退職'] !== true && c['退職'] !== '1');
+      castRows = activeCast;
+    }
+
+    const result = calculateSalary(salesRows, wageRows, rankRows, castRows, state.store);
+    state.lastResult = result;
+
+    // Render
+    renderPnl(result.pnl, result.period, 'pnl-', 'result-period');
+    renderSalaryTable(result.castList, 'salary-tbody');
+    renderCastSalesTable(result.castList, 'cast-sales-tbody');
+    document.getElementById('results').style.display = 'block';
+
+    // Save CSV data to DB if it came from CSV upload
+    if (state.files.cast) {
+      const parsed = castRows; // already has 退職 etc.
+      // Offer to save to DB – auto-save
+      await importCastToDB(castRows);
+      showToast('キャストマスタをDBに保存しました');
+    }
+    if (state.files.rank) {
+      await importRankToDB(rankRows);
+      showToast('キャストランクをDBに保存しました');
+    }
+
+    // Save history
+    if (result.period.start && result.period.end) {
+      const record = buildHistoryRecord(result, state.store);
+      const saveResult = await SalaryDB.saveHistory(record);
+      if (!saveResult.saved && saveResult.reason === 'monthly_exists') {
+        showToast('⚠️ 同じ期間の月次レコードが既に存在するため上書きしませんでした', true);
+      } else if (saveResult.saved) {
+        showToast(`${state.store} ${fmtDateRange(result.period.start, result.period.end)} をDBに保存しました`);
+      }
+    }
+
+  } catch (err) {
+    errBox.textContent = 'エラー: ' + err.message;
+    errBox.style.display = 'block';
+    console.error(err);
+  } finally {
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('calc-btn').disabled = false;
+  }
+});
+
+function buildHistoryRecord(result, store) {
+  return {
+    店舗: store,
+    period_start: result.period.start,
+    period_end:   result.period.end,
+    saved_at:     Date.now(),
+    pnl: result.pnl,
+    castData: result.castList.map(c => ({
+      キャスト名: c.キャスト名, ランク: c.ランク,
+      支払額: c.支払額, 基本給: c.基本給,
+      バック: c.バック || 0, 通勤手当: c.通勤手当,
+      販売総売上: c.販売総売上, 粗利総額: c.粗利総額,
+      退職: c.退職,
+    })),
+  };
+}
+
+// ===========================
+// Render helpers
+// ===========================
+function renderPnl(pnl, period, idPrefix, periodElemId) {
+  if (periodElemId) {
+    const el = document.getElementById(periodElemId);
+    if (el && period) el.textContent = fmtDateRange(period.start, period.end);
+  }
+  const set = (id, val) => { const el = document.getElementById(idPrefix + id); if (el) el.textContent = val; };
+  set('remote',       fmt(pnl.売上_遠隔_税込));
+  set('direct',       fmt(pnl.売上_直接_税込));
+  set('total-sales',  fmt(pnl.売上_合計_税込));
+  set('tax',          fmt(pnl.消費税));
+  set('gross',        fmt(pnl.売上総利益));
+  set('labor',       '△' + fmt(pnl.人件費));
+  set('contribution', fmt(pnl.貢献利益));
+  set('hours',        pnl.労働時間 || '—');
+}
+
+function renderPnlHTML(pnl) {
+  const r = (lbl, val, cls='') => `<div class="pnl-row ${cls}"><span class="pnl-lbl">${lbl}</span><span class="pnl-val">${val}</span></div>`;
+  return `
+    ${r('売上高（税込）', '', '')}
+    ${r('遠隔販売',        fmt(pnl.売上_遠隔_税込), 'indent')}
+    ${r('直接・その他',    fmt(pnl.売上_直接_税込), 'indent')}
+    ${r('売上高 合計',     fmt(pnl.売上_合計_税込), 'subtotal')}
+    ${r('　うち消費税（内税分）', fmt(pnl.消費税), 'note')}
+    <div class="pnl-divider"></div>
+    ${r('売上総利益（粗利）', fmt(pnl.売上総利益), 'subtotal')}
+    ${r('人件費', '△' + fmt(pnl.人件費), 'deduction')}
+    <div class="pnl-divider"></div>
+    ${r('貢献利益', fmt(pnl.貢献利益), 'total-row')}
+    <div class="pnl-row" style="padding-top:12px">
+      <span class="pnl-lbl" style="color:#888">労働時間</span>
+      <span class="pnl-val" style="color:#888">${pnl.労働時間 || '—'}</span>
+    </div>`;
+}
+
+function renderSalaryTable(castList, tbodyId) {
+  const tbody = document.getElementById(tbodyId);
+  const showRetired = document.getElementById('show-retired-calc')?.checked ?? true;
+  tbody.innerHTML = '';
+  castList.forEach(c => {
+    if (!showRetired && c.退職) return;
+    const tr = document.createElement('tr');
+    if (c.退職) tr.classList.add('retired-row');
+    tr.innerHTML = `
+      <td>${esc(c.キャスト名)}<span class="rank-badge ${rankClass(c.ランク)}">${esc(c.ランク)}</span>${c.退職 ? '<span style="color:#888;font-size:10px;margin-left:4px">退職</span>' : ''}</td>
+      <td>${fmt(c.支払額)}</td>
+      <td>${fmt(c.基本給)}</td>
+      <td>${fmt(c.バック || 0)}</td>
+      <td>${fmt(c.通勤手当)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderCastSalesTable(castList, tbodyId) {
+  const tbody = document.getElementById(tbodyId);
+  tbody.innerHTML = '';
+  [...castList].sort((a, b) => b.販売総売上 - a.販売総売上).forEach(c => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${esc(c.キャスト名)}<span class="rank-badge ${rankClass(c.ランク)}">${esc(c.ランク)}</span></td>
+      <td>${fmt(c.販売総売上)}</td>
+      <td>${fmt(c.粗利総額)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById('show-retired-calc').addEventListener('change', () => {
+  if (state.lastResult) renderSalaryTable(state.lastResult.castList, 'salary-tbody');
+});
+
+// ===========================
+// Master management
+// ===========================
+async function loadMasterData() {
+  state.rankDB = await SalaryDB.getAll('cast_rank');
+  state.castDB = await SalaryDB.getAll('cast_master');
+  // Update calc tab DB status
+  ['rank', 'cast'].forEach(k => { if (!state.files[k]) updateZoneFromDB(k); });
+  checkReady();
+  renderRankTable();
+  renderCastTable('');
+}
+
+function getRanksForEdit() {
+  // Get current values from the rank edit table
+  const rows = document.querySelectorAll('#rank-edit-tbody tr');
+  return Array.from(rows).map(tr => ({
+    ランク:   tr.querySelector('[data-f="ランク"]').value.trim(),
+    時給:     parseFloat(tr.querySelector('[data-f="時給"]').value) || 0,
+    バック率: parseFloat(tr.querySelector('[data-f="バック率"]').value) || 0,
+  })).filter(r => r.ランク);
+}
+
+function renderRankTable() {
+  const tbody = document.getElementById('rank-edit-tbody');
+  tbody.innerHTML = '';
+  const rows = state.rankDB.length ? state.rankDB : getDefaultRanks();
+  rows.forEach((r, i) => addRankRow(tbody, r));
+}
+
+function addRankRow(tbody, r = { ランク: '', 時給: 0, バック率: 0 }) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input class="cell-input" data-f="ランク" value="${esc(r.ランク)}"></td>
+    <td><input class="cell-input num" type="number" data-f="時給" value="${r.時給}" style="text-align:right"></td>
+    <td><input class="cell-input num" type="number" step="0.01" min="0" max="1" data-f="バック率" value="${r.バック率}" style="text-align:right"></td>
+    <td><button class="del-row-btn">削除</button></td>`;
+  tr.querySelector('.del-row-btn').addEventListener('click', () => { if (confirm('削除しますか？')) tr.remove(); });
+  tbody.appendChild(tr);
+}
+
+document.getElementById('rank-add-btn').addEventListener('click', () => {
+  addRankRow(document.getElementById('rank-edit-tbody'));
+});
+
+document.getElementById('rank-save-btn').addEventListener('click', async () => {
+  const rows = getRanksForEdit();
+  if (!rows.length) { showToast('ランクデータが空です', true); return; }
+  await SalaryDB.bulkReplace('cast_rank', rows);
+  state.rankDB = rows;
+  updateZoneFromDB('rank');
+  checkReady();
+  showToast('キャストランクをDBに保存しました');
+});
+
+document.getElementById('rank-import-btn').addEventListener('click', () => document.getElementById('rank-import-file').click());
+document.getElementById('rank-import-file').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  const rows = await parseShiftJisCSV(f);
+  e.target.value = '';
+  if (!rows.length || !('ランク' in rows[0])) { showToast('形式が正しくありません（ランク,時給,バック率）', true); return; }
+  state.rankDB = rows;
+  renderRankTable();
+  showToast('CSV読込完了 — 「DBに保存」で確定してください');
+});
+
+// --- Cast master ---
+function getCastsForEdit() {
+  const rows = document.querySelectorAll('#cast-edit-tbody tr[data-id]');
+  return Array.from(rows).map(tr => ({
+    id:        parseInt(tr.dataset.id) || undefined,
+    キャスト名: tr.querySelector('[data-f="キャスト名"]').value.trim(),
+    Airシフト:  tr.querySelector('[data-f="Airシフト"]').value.trim(),
+    ランク:     tr.querySelector('[data-f="ランク"]').value,
+    店舗:       tr.querySelector('[data-f="店舗"]').value,
+    退職:       tr.querySelector('[data-f="退職"]').checked,
+  })).filter(r => r.キャスト名);
+}
+
+let _masterStoreFilter = '';
+function renderCastTable(storeFilter) {
+  _masterStoreFilter = storeFilter;
+  const tbody = document.getElementById('cast-edit-tbody');
+  tbody.innerHTML = '';
+  const showRetired = document.getElementById('show-retired-master').checked;
+  const rankOptions = (state.rankDB.length ? state.rankDB : getDefaultRanks()).map(r => `<option>${esc(r.ランク)}</option>`).join('');
+  let rows = state.castDB;
+  if (storeFilter) rows = rows.filter(r => r.店舗 === storeFilter);
+  if (!showRetired) rows = rows.filter(r => !r.退職);
+  rows.forEach(r => addCastRow(tbody, r, rankOptions));
+}
+
+function addCastRow(tbody, r = {}, rankOptions) {
+  if (!rankOptions) {
+    rankOptions = (state.rankDB.length ? state.rankDB : getDefaultRanks()).map(r => `<option>${esc(r.ランク)}</option>`).join('');
+  }
+  const id = r.id !== undefined ? r.id : 'new-' + Date.now();
+  const tr = document.createElement('tr');
+  tr.dataset.id = id;
+  const rankSel = `<select class="cell-select" data-f="ランク">${rankOptions}</select>`;
+  const storeSel = `<select class="cell-select" data-f="店舗"><option>東京</option><option>名古屋</option><option>大阪</option></select>`;
+  tr.innerHTML = `
+    <td><input class="cell-input" data-f="キャスト名" value="${esc(r.キャスト名||'')}"></td>
+    <td><input class="cell-input" data-f="Airシフト" value="${esc(r.Airシフト||'')}"></td>
+    <td>${rankSel}</td>
+    <td>${storeSel}</td>
+    <td style="text-align:center"><input type="checkbox" data-f="退職"></td>
+    <td><button class="del-row-btn">削除</button></td>`;
+  // Set select values
+  tr.querySelector('[data-f="ランク"]').value = r.ランク || '';
+  tr.querySelector('[data-f="店舗"]').value   = r.店舗  || '東京';
+  tr.querySelector('[data-f="退職"]').checked = !!(r.退職);
+  tr.querySelector('.del-row-btn').addEventListener('click', () => { if (confirm('削除しますか？')) { tr.remove(); } });
+  tbody.appendChild(tr);
+}
+
+document.getElementById('cast-add-btn').addEventListener('click', () => {
+  addCastRow(document.getElementById('cast-edit-tbody'), { 店舗: _masterStoreFilter || '東京' });
+});
+
+document.getElementById('cast-save-btn').addEventListener('click', async () => {
+  // Collect all currently visible rows + rows from other stores/filters
+  const editedRows = getCastsForEdit().map(r => {
+    const id = String(r.id).startsWith('new-') ? undefined : r.id;
+    return id !== undefined ? { ...r, id } : r;
+  });
+
+  // Merge with existing DB rows not in current filter
+  const others = state.castDB.filter(r => {
+    if (_masterStoreFilter && r.店舗 !== _masterStoreFilter) return true;
+    const showRetired = document.getElementById('show-retired-master').checked;
+    if (!showRetired && r.退職) return true;
+    return false;
+  });
+
+  const allRows = [...others, ...editedRows];
+  await importCastToDB(allRows);
+  showToast('キャストマスタをDBに保存しました');
+});
+
+async function importCastToDB(rows) {
+  // Normalize: ensure each row has proper types
+  const normalized = rows.map(r => ({
+    ...r,
+    退職: r.退職 === true || r.退職 === 'true' || r.退職 === '1',
+  }));
+  // Strip undefined id for new rows
+  const forDB = normalized.map(r => {
+    const out = { ...r };
+    if (!out.id || String(out.id).startsWith('new-')) delete out.id;
+    return out;
+  });
+  await SalaryDB.bulkReplace('cast_master', forDB);
+  state.castDB = await SalaryDB.getAll('cast_master');
+  updateZoneFromDB('cast');
+  checkReady();
+}
+
+async function importRankToDB(rows) {
+  await SalaryDB.bulkReplace('cast_rank', rows);
+  state.rankDB = rows;
+  updateZoneFromDB('rank');
+  checkReady();
+}
+
+document.getElementById('cast-import-btn').addEventListener('click', () => document.getElementById('cast-import-file').click());
+document.getElementById('cast-import-file').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  const rows = await parseShiftJisCSV(f);
+  e.target.value = '';
+  if (!rows.length || !('キャスト名' in rows[0])) { showToast('形式が正しくありません', true); return; }
+  // Add missing 退職 field
+  state.castDB = rows.map(r => ({ ...r, 退職: r['退職'] === 'true' || r['退職'] === '1' }));
+  renderCastTable(_masterStoreFilter);
+  showToast('CSV読込完了 — 「DBに保存」で確定してください');
+});
+
+document.getElementById('show-retired-master').addEventListener('change', () => renderCastTable(_masterStoreFilter));
+
+// ===========================
+// Salary History
+// ===========================
+async function loadHistory() {
+  const allRecords = await SalaryDB.getAll('salary_history');
+  const storeFilter = document.querySelector('#hist-store-filter .store-btn.active')?.dataset.store || '';
+  const monthFilter = document.getElementById('hist-month-input').value; // 'YYYY-MM' or ''
+
+  let records = allRecords;
+  if (storeFilter) records = records.filter(r => r.店舗 === storeFilter);
+  if (monthFilter) {
+    const ym = monthFilter.replace('-', '');
+    records = records.filter(r => r.period_start.startsWith(ym));
+  }
+  records.sort((a, b) => (b.period_start > a.period_start ? 1 : -1));
+
+  renderHistList(records);
+
+  // Monthly aggregate if month selected
+  if (monthFilter) {
+    const ym = monthFilter.replace('-', '');
+    const monthRecords = allRecords.filter(r => {
+      if (storeFilter && r.店舗 !== storeFilter) return false;
+      return r.period_start.startsWith(ym);
+    });
+    renderMonthlyAggregate(monthRecords, monthFilter, storeFilter);
+  } else {
+    document.getElementById('monthly-summary-card').style.display = 'none';
+  }
+}
+
+document.getElementById('hist-month-input').addEventListener('change', loadHistory);
+
+function renderHistList(records) {
+  const container = document.getElementById('hist-list');
+  if (!records.length) { container.innerHTML = '<p style="color:#666;font-size:13px">レコードがありません。</p>'; return; }
+  container.innerHTML = '';
+  records.forEach(rec => {
+    const start = rec.period_start, end = rec.period_end;
+    const s = new Date(start.slice(0,4), start.slice(4,6)-1, start.slice(6,8));
+    const e = new Date(end.slice(0,4),   end.slice(4,6)-1,   end.slice(6,8));
+    const days = (e - s) / 86400000 + 1;
+    const typeClass = days > 20 ? 'monthly' : 'halfmonth';
+    const typeLabel = days > 20 ? '月次' : '半月';
+    const totalSalary = rec.castData ? rec.castData.reduce((a, c) => a + (c.支払額 || 0), 0) : 0;
+
+    const div = document.createElement('div');
+    div.className = 'hist-record';
+    div.dataset.key = JSON.stringify([rec.店舗, rec.period_start, rec.period_end]);
+    div.innerHTML = `
+      <span class="hist-period">${fmtDateRange(start, end)}</span>
+      <span class="hist-store">${esc(rec.店舗)}</span>
+      <span class="hist-type ${typeClass}">${typeLabel}</span>
+      <span class="hist-salary">${fmtN(totalSalary)} 円</span>
+      <button class="hist-del" title="削除">✕</button>`;
+
+    div.querySelector('.hist-del').addEventListener('click', async ev => {
+      ev.stopPropagation();
+      if (!confirm(`${fmtDateRange(start, end)} のレコードを削除しますか？`)) return;
+      await SalaryDB.del('salary_history', [rec.店舗, rec.period_start, rec.period_end]);
+      loadHistory();
+    });
+
+    div.addEventListener('click', e => {
+      if (e.target.classList.contains('hist-del')) return;
+      document.querySelectorAll('.hist-record').forEach(d => d.classList.remove('active'));
+      div.classList.add('active');
+      showHistDetail(rec);
+    });
+
+    container.appendChild(div);
+  });
+}
+
+function showHistDetail(rec) {
+  const card = document.getElementById('hist-detail-card');
+  document.getElementById('hist-detail-title').textContent =
+    `${rec.店舗} ${fmtDateRange(rec.period_start, rec.period_end)}`;
+  document.getElementById('hist-detail-pnl').innerHTML = renderPnlHTML(rec.pnl);
+  const tbody = document.getElementById('hist-detail-cast-tbody');
+  tbody.innerHTML = '';
+  (rec.castData || []).sort((a, b) => b.支払額 - a.支払額).forEach(c => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${esc(c.キャスト名)}<span class="rank-badge ${rankClass(c.ランク)}">${esc(c.ランク)}</span></td>
+      <td>${fmt(c.支払額)}</td><td>${fmt(c.基本給)}</td><td>${fmt(c.バック||0)}</td>
+      <td>${fmt(c.販売総売上)}</td><td>${fmt(c.粗利総額)}</td>`;
+    tbody.appendChild(tr);
+  });
+  card.style.display = 'block';
+}
+
+function renderMonthlyAggregate(records, monthFilter, storeFilter) {
+  if (!records.length) { document.getElementById('monthly-summary-card').style.display = 'none'; return; }
+
+  // Aggregate P&L
+  const pnl = records.reduce((acc, r) => ({
+    売上_遠隔_税込: acc.売上_遠隔_税込 + (r.pnl.売上_遠隔_税込 || 0),
+    売上_直接_税込: acc.売上_直接_税込 + (r.pnl.売上_直接_税込 || 0),
+    売上_合計_税込: acc.売上_合計_税込 + (r.pnl.売上_合計_税込 || 0),
+    消費税:         acc.消費税         + (r.pnl.消費税          || 0),
+    売上総利益:     acc.売上総利益     + (r.pnl.売上総利益      || 0),
+    人件費:         acc.人件費         + (r.pnl.人件費          || 0),
+    貢献利益:       acc.貢献利益       + (r.pnl.貢献利益        || 0),
+    労働分数:       acc.労働分数       + (r.pnl.労働分数        || 0),
+  }), { 売上_遠隔_税込:0,売上_直接_税込:0,売上_合計_税込:0,消費税:0,売上総利益:0,人件費:0,貢献利益:0,労働分数:0 });
+  const lm = pnl.労働分数;
+  pnl.労働時間 = Math.floor(lm/60) + ':' + String(lm%60).padStart(2,'0');
+
+  // Aggregate cast data
+  const castMap = {};
+  for (const rec of records) {
+    for (const c of (rec.castData || [])) {
+      if (!castMap[c.キャスト名]) castMap[c.キャスト名] = { キャスト名: c.キャスト名, ランク: c.ランク, 支払額: 0, 基本給: 0, バック: 0, 販売総売上: 0, 粗利総額: 0 };
+      castMap[c.キャスト名].支払額     += c.支払額     || 0;
+      castMap[c.キャスト名].基本給     += c.基本給     || 0;
+      castMap[c.キャスト名].バック     += c.バック     || 0;
+      castMap[c.キャスト名].販売総売上 += c.販売総売上 || 0;
+      castMap[c.キャスト名].粗利総額   += c.粗利総額   || 0;
+    }
+  }
+
+  const ym = monthFilter; // 'YYYY-MM'
+  const label = `${ym} ${storeFilter || '全店舗'} (${records.length}件の半月データ合算)`;
+  document.getElementById('monthly-summary-label').textContent = label;
+  document.getElementById('monthly-pnl').innerHTML = renderPnlHTML(pnl);
+
+  const tbody = document.getElementById('monthly-cast-tbody');
+  tbody.innerHTML = '';
+  Object.values(castMap).sort((a, b) => b.支払額 - a.支払額).forEach(c => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${esc(c.キャスト名)}<span class="rank-badge ${rankClass(c.ランク)}">${esc(c.ランク)}</span></td>
+      <td>${fmt(c.支払額)}</td><td>${fmt(c.基本給)}</td><td>${fmt(c.バック)}</td>
+      <td>${fmt(c.販売総売上)}</td><td>${fmt(c.粗利総額)}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('monthly-summary-card').style.display = 'block';
+}
+
+// ===========================
+// Init
+// ===========================
+(async function init() {
+  await loadMasterData();
+  renderRankTable();
+})();
+</script>
+</body>
+</html>

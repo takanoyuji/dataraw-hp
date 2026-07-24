@@ -7,6 +7,7 @@ import { getCategoryById } from "@/lib/categories";
 import { Badge } from "@/components/ui/badge";
 import { ScrollAnimation } from "@/components/shared/scroll-animation";
 import { ArticleContent } from "@/components/articles/article-content";
+import { ArticleTracker } from "@/components/articles/article-tracker";
 import { ArticlePager } from "@/components/articles/article-pager";
 import { ArticleClosing } from "@/components/articles/article-closing";
 import { Comments } from "@/components/articles/comments";
@@ -133,6 +134,9 @@ export default async function ArticlePage({ params }: Props) {
             {seriesContext && <ArticlePager context={seriesContext} />}
 
             <ArticleClosing context={seriesContext} />
+
+            {/* 記事末尾＝読了判定のセンチネル。表示/読了を自前計測 */}
+            <ArticleTracker slug={slug} />
           </article>
         </ScrollAnimation>
 

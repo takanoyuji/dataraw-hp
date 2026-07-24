@@ -2,13 +2,22 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { FolderOpen, LayoutDashboard, LogOut, Plus } from "lucide-react";
+import {
+  BarChart3,
+  FolderOpen,
+  LayoutDashboard,
+  LogOut,
+  MessageCircle,
+  Plus,
+} from "lucide-react";
 import { toast } from "sonner";
 
 const menuItems = [
   { href: "/admin", icon: LayoutDashboard, label: "ダッシュボード" },
   { href: "/admin/articles/new", icon: Plus, label: "新規記事" },
   { href: "/admin/categories", icon: FolderOpen, label: "カテゴリ管理" },
+  { href: "/admin/analytics", icon: BarChart3, label: "アクセス・読了" },
+  { href: "/admin/comments", icon: MessageCircle, label: "コメント" },
 ];
 
 export function AdminSidebar() {

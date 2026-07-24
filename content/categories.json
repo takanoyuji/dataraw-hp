@@ -1,0 +1,26 @@
+[
+  {
+    "id": "data-science",
+    "name": "データサイエンス",
+    "description": "データ分析、機械学習、AIに関する記事",
+    "color": "#3B82F6"
+  },
+  {
+    "id": "web-development",
+    "name": "Web開発",
+    "description": "Web開発技術、フレームワーク、ベストプラクティス",
+    "color": "#8B5CF6"
+  },
+  {
+    "id": "ai-tools",
+    "name": "AI活用",
+    "description": "生成AI、Claude Code等のAIツール活用",
+    "color": "#06B6D4"
+  },
+  {
+    "id": "business",
+    "name": "ビジネス",
+    "description": "事業運営、DX、コンサルティング",
+    "color": "#10B981"
+  }
+]

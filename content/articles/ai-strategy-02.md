@@ -9,10 +9,10 @@ published: true
 ---
 
 > **連載: Claude Codeをコンサルとして育ててみた（全4回）**
-> 1. [AIに戦略を立てさせて、何一つ決まらなかった](/articles/ai-strategy-01-nothing-decided)
+> 1. [AIに戦略を立てさせて、何一つ決まらなかった](/articles/ai-strategy-01)
 > 2. 「戦略的に考えて」は効かない。AIに効いた指示の書き方 ← いまここ
-> 3. [AIは「それっぽい論理」なら作れる。向きは間違えるが](/articles/ai-strategy-03-plausible-logic)
-> 4. [AIはリサーチ屋にはなれる。コンサルにはまだなれない](/articles/ai-strategy-04-research-not-consulting)
+> 3. [AIは「それっぽい論理」なら作れる。向きは間違えるが](/articles/ai-strategy-03)
+> 4. [AIはリサーチ屋にはなれる。コンサルにはまだなれない](/articles/ai-strategy-04)
 
 前回、素のAIに戦略を書かせたら、結語が「今後の動向に注視」で終わった。原因はモデルの能力ではなく指示の設計にある、というところまでで終わっている。ではその設計とは何なのか。今回はその中身を書く。
 

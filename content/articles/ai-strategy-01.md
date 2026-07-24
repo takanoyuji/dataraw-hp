@@ -10,9 +10,9 @@ published: true
 
 > **連載: Claude Codeをコンサルとして育ててみた（全4回）**
 > 1. AIに戦略を立てさせて、何一つ決まらなかった ← いまここ
-> 2. [「戦略的に考えて」は効かない。AIに効いた指示の書き方](/articles/ai-strategy-02-instructions)
-> 3. [AIは「それっぽい論理」なら作れる。向きは間違えるが](/articles/ai-strategy-03-plausible-logic)
-> 4. [AIはリサーチ屋にはなれる。コンサルにはまだなれない](/articles/ai-strategy-04-research-not-consulting)
+> 2. [「戦略的に考えて」は効かない。AIに効いた指示の書き方](/articles/ai-strategy-02)
+> 3. [AIは「それっぽい論理」なら作れる。向きは間違えるが](/articles/ai-strategy-03)
+> 4. [AIはリサーチ屋にはなれる。コンサルにはまだなれない](/articles/ai-strategy-04)
 
 **「AIでコンサルは要らなくなる」という議論をよく見かける。**賛成の意見も反対の意見も読んだが、どれも他人のケースの話だった。自分の手元で確かめたほうが早い。そう思って、いま実際に社内で検討している新規事業のテーマを、そのまま素のClaude Fable 5に投げてみた。
 

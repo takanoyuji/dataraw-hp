@@ -9,9 +9,9 @@ published: true
 ---
 
 > **連載: Claude Codeをコンサルとして育ててみた（全4回）**
-> 1. [AIに戦略を立てさせて、何一つ決まらなかった](/articles/ai-strategy-01-nothing-decided)
-> 2. [「戦略的に考えて」は効かない。AIに効いた指示の書き方](/articles/ai-strategy-02-instructions)
-> 3. [AIは「それっぽい論理」なら作れる。向きは間違えるが](/articles/ai-strategy-03-plausible-logic)
+> 1. [AIに戦略を立てさせて、何一つ決まらなかった](/articles/ai-strategy-01)
+> 2. [「戦略的に考えて」は効かない。AIに効いた指示の書き方](/articles/ai-strategy-02)
+> 3. [AIは「それっぽい論理」なら作れる。向きは間違えるが](/articles/ai-strategy-03)
 > 4. AIはリサーチ屋にはなれる。コンサルにはまだなれない ← いまここ（最終回）
 
 前回、追い風と逆風の取り違えは知識量ではなく当事者性の問題ではないか、というところで終わった。だとすれば、モデルが賢くなっても人間の往復はなくならない。最終回では、そこを含めて実験の結論を出す。

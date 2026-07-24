@@ -9,10 +9,10 @@ published: true
 ---
 
 > **連載: Claude Codeをコンサルとして育ててみた（全4回）**
-> 1. [AIに戦略を立てさせて、何一つ決まらなかった](/articles/ai-strategy-01-nothing-decided)
-> 2. [「戦略的に考えて」は効かない。AIに効いた指示の書き方](/articles/ai-strategy-02-instructions)
+> 1. [AIに戦略を立てさせて、何一つ決まらなかった](/articles/ai-strategy-01)
+> 2. [「戦略的に考えて」は効かない。AIに効いた指示の書き方](/articles/ai-strategy-02)
 > 3. AIは「それっぽい論理」なら作れる。向きは間違えるが ← いまここ
-> 4. [AIはリサーチ屋にはなれる。コンサルにはまだなれない](/articles/ai-strategy-04-research-not-consulting)
+> 4. [AIはリサーチ屋にはなれる。コンサルにはまだなれない](/articles/ai-strategy-04)
 
 ## 既製のスキルを入れるのと、何が違うのか
 

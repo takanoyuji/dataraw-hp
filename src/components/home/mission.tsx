@@ -4,14 +4,34 @@ import { useEffect, useRef, useState } from "react";
 import { ScrollAnimation } from "@/components/shared/scroll-animation";
 import { SectionHeader } from "@/components/shared/section-header";
 
-const stats = [
-  { value: 6, suffix: "店舗", label: "自社運営実績" },
-  { value: 2000, suffix: "万円", label: "月商実績" },
-  { value: 5, suffix: "%", label: "解約率削減" },
-  { value: 20, suffix: "億円", label: "売上貢献" },
+// 代表数値は「自社で実践 × 顧客で実証」の2軸でMECEに揃える。
+// 左の柱 = 自ら事業を運営して得た実績、右の柱 = 支援先で再現した成果。
+const pillars = [
+  {
+    header: "自社事業成果",
+    stats: [
+      { value: 6, suffix: "事業", label: "運営中の事業" },
+      { value: 2000, suffix: "万円", label: "月商実績" },
+    ],
+  },
+  {
+    header: "顧客貢献",
+    stats: [
+      { value: 20, prefix: "+", suffix: "億円", label: "年間売上貢献" },
+      { value: 5, prefix: "−", suffix: "%", label: "解約率の改善" },
+    ],
+  },
 ];
 
-function AnimatedNumber({ value, suffix }: { value: number; suffix: string }) {
+function AnimatedNumber({
+  value,
+  suffix,
+  prefix = "",
+}: {
+  value: number;
+  suffix: string;
+  prefix?: string;
+}) {
   const ref = useRef<HTMLSpanElement>(null);
   const [display, setDisplay] = useState(0);
   const [started, setStarted] = useState(false);
@@ -50,6 +70,7 @@ function AnimatedNumber({ value, suffix }: { value: number; suffix: string }) {
 
   return (
     <span ref={ref} className="tabular-nums">
+      {prefix}
       {display.toLocaleString()}
       {suffix}
     </span>
@@ -83,20 +104,34 @@ export function Mission() {
             </p>
           </ScrollAnimation>
 
-          {/* Stats grid */}
+          {/* Stats: 「自社事業成果」「顧客貢献」の2軸を、常に横並びで対等に見せる。
+              数値より軸名（枠のタイトル）を主役にする。 */}
           <ScrollAnimation className="md:w-5/12" delay={200}>
             <div className="grid grid-cols-2 gap-4">
-              {stats.map((stat, i) => (
+              {pillars.map((pillar) => (
                 <div
-                  key={stat.label}
-                  className="glass-card p-5 text-center group hover:border-blue-500/30 transition-all duration-300"
-                  style={{ animationDelay: `${i * 100}ms` }}
+                  key={pillar.header}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"
                 >
-                  <div className="text-2xl md:text-3xl font-bold gradient-text mb-1">
-                    <AnimatedNumber value={stat.value} suffix={stat.suffix} />
-                  </div>
-                  <div className="text-xs text-gray-500 tracking-wide">
-                    {stat.label}
+                  {/* 枠のタイトル = 軸名（ここが主役） */}
+                  <h4 className="mb-4 border-b border-white/10 pb-3 text-center text-lg font-bold tracking-tight text-white md:text-xl">
+                    {pillar.header}
+                  </h4>
+                  <div className="space-y-4">
+                    {pillar.stats.map((stat) => (
+                      <div key={stat.label} className="text-center">
+                        <div className="text-xl font-semibold text-blue-300 md:text-2xl">
+                          <AnimatedNumber
+                            value={stat.value}
+                            suffix={stat.suffix}
+                            prefix={"prefix" in stat ? stat.prefix : ""}
+                          />
+                        </div>
+                        <div className="mt-0.5 text-xs tracking-wide text-gray-500">
+                          {stat.label}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}

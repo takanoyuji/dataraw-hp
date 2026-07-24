@@ -37,6 +37,11 @@ export interface Series {
   /** 記事タイトルとして使う連載名の幹（回数・「全4回」を除いたもの） */
   titleBase?: string;
   shortName?: string;
+  /**
+   * "series"（既定）: 順番に読む連載。単位は「回」。
+   * "feature": 本編＋補足をまとめた特集。単位は「記事」。第N回とは呼ばない。
+   */
+  kind?: "series" | "feature";
   articles: SeriesEntry[];
   extras?: SeriesEntry[];
 }
@@ -45,6 +50,8 @@ export interface Series {
 export interface SeriesContext {
   series: Series;
   entry: SeriesEntry;
+  /** "series"（連載）か "feature"（特集）か */
+  kind: "series" | "feature";
   /** 本編なら 1 始まりの回数、番外編なら null */
   index: number | null;
   total: number;

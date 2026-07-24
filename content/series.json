@@ -26,12 +26,50 @@
         "lead": "Before/Afterの比較と、この実験の結論。期待すべきはリサーチで、提案は壁打ちで直していくものだった。"
       }
     ],
-    "extras": [
+    "extras": []
+  },
+  {
+    "id": "saas-survival",
+    "name": "AI時代にSaaS企業はどう生き残るべきか",
+    "titleBase": "AI時代にSaaS企業はどう生き残るべきか",
+    "shortName": "AI時代にSaaS企業はどう生き残るべきか",
+    "kind": "feature",
+    "articles": [
       {
-        "slug": "ai-strategy-extra-attendance-saas",
-        "shortTitle": "番外編 勤怠管理を3分で作れる時代に、勤怠管理サービスをやる理由",
-        "lead": "連載の題材選びについての補足。SaaSの構築コストが崩れた年に、あえて勤怠管理を考えている。"
+        "slug": "saas-survival-ai-era",
+        "shortTitle": "本編 AI時代にSaaS企業はどう生き残るべきか",
+        "lead": "3分で作れる勤怠管理ツールで、あえて新規事業を考えた。機能では戦えない時代の勝ち筋。"
+      },
+      {
+        "slug": "saas-survival-ai-era-research",
+        "shortTitle": "調査レポート 勤怠・シフト管理サービス参入",
+        "lead": "市場規模・競合価格・技術構成・API原価試算までを出典付きで整理した根拠データ編。"
+      },
+      {
+        "slug": "saas-survival-ai-era-discussion",
+        "shortTitle": "有識者討論 この参入戦略は、どこで崩れるか",
+        "lead": "事業戦略・エンジニア・投資の3人が当事者に異論をぶつける、まとめない討論。"
       }
-    ]
+    ],
+    "extras": []
+  },
+  {
+    "id": "konkafe-sociology",
+    "name": "社会学から見たコンカフェ（全2回）",
+    "titleBase": "社会学から見たコンカフェ",
+    "shortName": "社会学から見たコンカフェ",
+    "articles": [
+      {
+        "slug": "konkafe-01-history",
+        "shortTitle": "第1回 コンカフェは、どこから来たか",
+        "lead": "2001年の「癒しのメイド喫茶」から、指名とドリンクバックの夜の商いまで。25年で何を売る場所に変わったのか。"
+      },
+      {
+        "slug": "konkafe-02-why",
+        "shortTitle": "第2回 なぜ人はコンカフェに通うのか",
+        "lead": "売っているのは飲み物でも萌えでもない。市場が解体した共同体機能そのものを、時間貸しで買い戻している。"
+      }
+    ],
+    "extras": []
   }
 ]

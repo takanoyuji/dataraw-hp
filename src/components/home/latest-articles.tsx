@@ -58,7 +58,9 @@ export function LatestArticles() {
                       {isSeries && (
                         <Badge className="border-0 text-xs bg-indigo-500/20 text-indigo-300 flex items-center gap-1">
                           <Layers className="h-3 w-3" />
-                          連載・全{item.count}回
+                          {item.series.kind === "feature"
+                            ? `特集・全${item.count}記事`
+                            : `連載・全${item.count}回`}
                         </Badge>
                       )}
                       {cat && (

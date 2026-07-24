@@ -35,19 +35,23 @@ function PagerLink({
 }
 
 export function ArticlePager({ context }: { context: SeriesContext }) {
-  const { prev, next, isExtra } = context;
+  const { prev, next, isExtra, kind } = context;
   if (!prev && !next) return null;
+
+  const isFeature = kind === "feature";
+  const prevLabel = isFeature ? "前の記事" : "前の回";
+  const nextLabel = isExtra
+    ? isFeature
+      ? "特集トップ"
+      : "連載本編"
+    : isFeature
+      ? "続けて読む"
+      : "次の回";
 
   return (
     <nav className="mt-10 flex flex-wrap gap-3">
-      {prev && <PagerLink entry={prev} label="前の回" direction="prev" />}
-      {next && (
-        <PagerLink
-          entry={next}
-          label={isExtra ? "連載本編" : "次の回"}
-          direction="next"
-        />
-      )}
+      {prev && <PagerLink entry={prev} label={prevLabel} direction="prev" />}
+      {next && <PagerLink entry={next} label={nextLabel} direction="next" />}
     </nav>
   );
 }

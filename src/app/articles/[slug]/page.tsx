@@ -9,6 +9,7 @@ import { ScrollAnimation } from "@/components/shared/scroll-animation";
 import { ArticleContent } from "@/components/articles/article-content";
 import { ArticlePager } from "@/components/articles/article-pager";
 import { ArticleClosing } from "@/components/articles/article-closing";
+import { Comments } from "@/components/articles/comments";
 import { getSeriesContext } from "@/lib/series";
 
 interface Props {
@@ -134,6 +135,8 @@ export default async function ArticlePage({ params }: Props) {
             <ArticleClosing context={seriesContext} />
           </article>
         </ScrollAnimation>
+
+        <Comments slug={slug} />
       </div>
     </div>
   );

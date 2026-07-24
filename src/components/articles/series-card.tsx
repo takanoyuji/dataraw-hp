@@ -13,6 +13,8 @@ export function SeriesCard({ item, categoryName }: SeriesCardProps) {
   const { series, representative: rep, count, latestPublishedAt } = item;
   const entrySlug = series.articles[0].slug;
   const title = series.shortName ?? series.titleBase ?? series.name;
+  const badgeText =
+    series.kind === "feature" ? `特集・全${count}記事` : `連載・全${count}回`;
 
   return (
     <Link href={`/articles/${entrySlug}`} className="block group">
@@ -20,7 +22,7 @@ export function SeriesCard({ item, categoryName }: SeriesCardProps) {
         <div className="flex flex-wrap gap-2 mb-3">
           <Badge className="bg-indigo-500/20 text-indigo-300 border-0 flex items-center gap-1">
             <Layers className="h-3 w-3" />
-            連載・全{count}回
+            {badgeText}
           </Badge>
           {categoryName && (
             <Badge variant="secondary" className="bg-blue-500/20 text-blue-300 border-0">

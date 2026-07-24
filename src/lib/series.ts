@@ -84,12 +84,16 @@ export function getSeriesContext(slug: string): SeriesContext | null {
     if (mainIndex === -1 && !extra) continue;
 
     const total = series.articles.length;
-    const seriesTitle = `連載: ${series.titleBase ?? series.name}`;
+    const kind = series.kind ?? "series";
+    const isFeature = kind === "feature";
+    const unit = isFeature ? "記事" : "回";
+    const seriesTitle = `${isFeature ? "特集" : "連載"}: ${series.titleBase ?? series.name}`;
 
     if (extra) {
       return {
         series,
         entry: extra,
+        kind,
         index: null,
         total,
         isExtra: true,
@@ -105,12 +109,15 @@ export function getSeriesContext(slug: string): SeriesContext | null {
     return {
       series,
       entry: series.articles[mainIndex],
+      kind,
       index: mainIndex + 1,
       total,
       isExtra: false,
-      label: `全${total}回`,
+      label: `全${total}${unit}`,
       seriesTitle,
-      positionLabel: `第${mainIndex + 1}回${isLast ? "（最終回）" : ""}`,
+      positionLabel: isFeature
+        ? series.articles[mainIndex].shortTitle
+        : `第${mainIndex + 1}回${isLast ? "（最終回）" : ""}`,
       prev: series.articles[mainIndex - 1],
       next: series.articles[mainIndex + 1],
       extras,

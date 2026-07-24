@@ -256,7 +256,11 @@ const components: Components = {
     />
   ),
   code: ({ className, children, ...props }) => {
-    const isBlock = /language-/.test(className ?? "");
+    // 言語指定のあるコードブロックに加え、改行を含む＝複数行のコードもブロック扱いにする。
+    // （言語なしフェンス ``` はclassNameが付かず、放置するとインライン用スタイルが当たって
+    //  暗い<pre>の中に白帯＋薄字が出て可読性が落ちる。ファイルツリー等がこれに該当。）
+    const isBlock =
+      /language-/.test(className ?? "") || String(children).includes("\n");
     if (isBlock)
       return (
         <code className={`${className ?? ""} text-[0.86rem]`} {...props}>

@@ -8,7 +8,7 @@ author: "高野 悠司"
 published: true
 ---
 
-> **連載: Claude Fable 5の戦略が稚拙だったので、コンサルに育てた全4回**
+> **連載: Claude Codeをコンサルとして育ててみた（全4回）**
 > 1. [AIに戦略を立てさせて、何一つ決まらなかった](/articles/ai-strategy-01-nothing-decided)
 > 2. [「戦略的に考えて」は効かない。AIに効いた指示の書き方](/articles/ai-strategy-02-instructions)
 > 3. [AIは「それっぽい論理」なら作れる。向きは間違えるが](/articles/ai-strategy-03-plausible-logic)

@@ -17,10 +17,12 @@ export function ScrollAnimation({ children, className, delay = 0 }: ScrollAnimat
     const target = ref.current;
     if (!target) return;
 
-    // IntersectionObserver 非対応（や無効化）の環境では、非表示のままにしない
+    // IntersectionObserver 非対応（や無効化）の環境では、非表示のままにしない。
+    // サーバー描画は常に非表示側なので、ハイドレーション不一致を避けるために
+    // マウント後のタイマー経由で表示に切り替える。
     if (typeof IntersectionObserver === "undefined") {
-      setIsVisible(true);
-      return;
+      const fallback = setTimeout(() => setIsVisible(true), delay);
+      return () => clearTimeout(fallback);
     }
 
     // threshold は 0 固定。割合で指定すると「要素の面積の N%」が条件になるため、

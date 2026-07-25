@@ -40,6 +40,9 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/content ./content
+# OGP画像生成に使う日本語フォント。静的生成済みだが、オンデマンド生成に
+# フォールバックした場合に豆腐にならないよう実行イメージにも入れておく
+COPY --from=builder /app/assets ./assets
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/next.config.ts ./
 

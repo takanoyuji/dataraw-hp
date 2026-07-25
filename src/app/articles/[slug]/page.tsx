@@ -21,9 +21,38 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const article = getArticleBySlug(slug);
   if (!article) return { title: "記事が見つかりません" };
+
+  // SNSのカードは1〜2行しか出ないので、説明文が長い記事は切り詰める
+  const summary =
+    article.description.length > 110
+      ? `${article.description.slice(0, 110)}…`
+      : article.description;
+
   return {
     title: article.title,
     description: article.description,
+    // 画像は opengraph-image.tsx が記事ごとに生成したものが自動で入る
+    openGraph: {
+      // openGraph は親のものを置き換えるので、siteName/locale もここで指定し直す
+      type: "article",
+      siteName: "DataRaw LLC",
+      locale: "ja_JP",
+      url: `/articles/${slug}`,
+      title: article.title,
+      description: summary,
+      publishedTime: article.publishedAt,
+      modifiedTime: article.updatedAt,
+      authors: [article.author],
+      tags: article.tags,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: article.title,
+      description: summary,
+    },
+    alternates: {
+      canonical: `/articles/${slug}`,
+    },
   };
 }
 

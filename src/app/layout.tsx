@@ -15,14 +15,38 @@ const notoSansJP = Noto_Sans_JP({
   variable: "--font-sans",
 });
 
+const SITE_NAME = "DataRaw LLC";
+const SITE_URL = "https://dataraw.jp";
+const SITE_DESCRIPTION =
+  "データサイエンスとAIの専門家集団。経営に、再現性を。勘や経験に頼りがちな意思決定に、データで根拠をもたらします。";
+
 export const metadata: Metadata = {
+  // OGP画像などの相対URLを絶対URLに解決するための基点。未設定だとビルドが落ちる
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "DataRaw LLC",
-    template: "%s | DataRaw LLC",
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
   },
-  description: "データサイエンスとAIの専門家集団。経営に、再現性を。勘や経験に頼りがちな意思決定に、データで根拠をもたらします。",
+  description: SITE_DESCRIPTION,
   icons: {
     icon: "/favicon.ico",
+  },
+  // 画像自体は opengraph-image.tsx（ファイル規約）が自動で差し込むため
+  // ここでは images を指定しない。指定するとそちらが優先されてしまう。
+  openGraph: {
+    type: "website",
+    locale: "ja_JP",
+    siteName: SITE_NAME,
+    url: SITE_URL,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@takano_yuji_ds",
+    creator: "@takano_yuji_ds",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
   },
 };
 

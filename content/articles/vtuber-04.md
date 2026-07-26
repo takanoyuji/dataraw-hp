@@ -5,7 +5,7 @@ category: "business"
 tags: ["VTuber", "行動経済学", "事業戦略", "コンカフェ"]
 publishedAt: "2026-07-25"
 author: "高野 悠司"
-published: true
+published: false
 ---
 
 > **連載: 仮面は、誰のものか（全4回）**

@@ -20,8 +20,10 @@ export default async function Image({
   const { slug } = await params;
   const article = getArticleBySlug(slug);
 
-  // 記事が引けない場合もカードは出したいので、ブランド名だけで描く
-  if (!article) {
+  // 記事が引けない場合もカードは出したいので、ブランド名だけで描く。
+  // 非公開記事も同じ扱いにする。このルートは記事本体と違って200を返すため、
+  // タイトルを描いてしまうと非公開のはずの見出しが画像として取得できてしまう。
+  if (!article || !article.published) {
     return renderOgImage({ title: "DataRaw LLC" });
   }
 

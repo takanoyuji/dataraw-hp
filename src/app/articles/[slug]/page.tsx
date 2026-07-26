@@ -20,7 +20,9 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const article = getArticleBySlug(slug);
-  if (!article) return { title: "記事が見つかりません" };
+  // 非公開記事は本文が404になるので、メタデータにもタイトルを出さない
+  // （og:title は404ページのHTMLにも残るため、ここで塞ぐ必要がある）
+  if (!article || !article.published) return { title: "記事が見つかりません" };
 
   // SNSのカードは1〜2行しか出ないので、説明文が長い記事は切り詰める
   const summary =

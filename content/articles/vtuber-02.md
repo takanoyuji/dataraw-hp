@@ -5,7 +5,7 @@ category: "business"
 tags: ["VTuber", "社会学", "民俗学", "ファンビジネス"]
 publishedAt: "2026-07-25"
 author: "高野 悠司"
-published: true
+published: false
 ---
 
 > **連載: 仮面は、誰のものか（全4回）**

@@ -3,6 +3,20 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ScrollAnimation } from "@/components/shared/scroll-animation";
 import { SectionHeader } from "@/components/shared/section-header";
+import { cn } from "@/lib/utils";
+
+/**
+ * 代表写真の表示切り替え（一時的に非公開中）。
+ *
+ * 元に戻すときは次の2つを両方やること。片方だけだと画像が404になる。
+ *   1. この定数を true にする
+ *   2. 画像ファイルを公開ディレクトリに戻す
+ *      git mv assets/profile/takano.jpg public/images/takano.jpg
+ *
+ * 直リンクでも見えないように、画像は public/ の外（assets/profile/）へ退避してある。
+ * 写真側のマークアップは復帰用にそのまま残してあるので消さないこと。
+ */
+const SHOW_PROFILE_PHOTO: boolean = false;
 
 export function Profile() {
   return (
@@ -13,24 +27,36 @@ export function Profile() {
         <ScrollAnimation>
           <SectionHeader title="代表プロフィール" />
         </ScrollAnimation>
-        <div className="flex flex-col md:flex-row items-center gap-12 md:gap-20">
-          <ScrollAnimation className="md:w-1/3">
-            <div className="relative max-w-[280px] mx-auto">
-              {/* Animated ring */}
-              <div className="absolute -inset-3 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-pink-500 opacity-20 blur-sm animate-spin-slow" />
-              <div className="relative rounded-full p-1 bg-gradient-to-tr from-blue-500/50 via-purple-500/50 to-pink-500/50">
-                <Image
-                  src="/images/takano.jpg"
-                  alt="高野 悠司 プロフィール"
-                  width={400}
-                  height={400}
-                  className="rounded-full w-full h-auto object-cover bg-black"
-                />
+        <div
+          className={cn(
+            "flex flex-col items-center gap-12",
+            // 写真があるときだけ左右2カラム。無いときは1カラムのまま中央に置く
+            SHOW_PROFILE_PHOTO && "md:flex-row md:gap-20"
+          )}
+        >
+          {SHOW_PROFILE_PHOTO && (
+            <ScrollAnimation className="md:w-1/3">
+              <div className="relative max-w-[280px] mx-auto">
+                {/* Animated ring */}
+                <div className="absolute -inset-3 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-pink-500 opacity-20 blur-sm animate-spin-slow" />
+                <div className="relative rounded-full p-1 bg-gradient-to-tr from-blue-500/50 via-purple-500/50 to-pink-500/50">
+                  <Image
+                    src="/images/takano.jpg"
+                    alt="高野 悠司 プロフィール"
+                    width={400}
+                    height={400}
+                    className="rounded-full w-full h-auto object-cover bg-black"
+                  />
+                </div>
               </div>
-            </div>
-          </ScrollAnimation>
+            </ScrollAnimation>
+          )}
 
-          <ScrollAnimation className="md:w-2/3" delay={200}>
+          {/* 写真が無いときは全幅に広げず、読みやすい幅で中央に収める */}
+          <ScrollAnimation
+            className={SHOW_PROFILE_PHOTO ? "md:w-2/3" : "w-full max-w-3xl"}
+            delay={SHOW_PROFILE_PHOTO ? 200 : 0}
+          >
             <div className="space-y-5">
               <div>
                 <h3 className="text-2xl md:text-3xl font-bold mb-1">高野 悠司</h3>

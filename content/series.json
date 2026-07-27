@@ -37,17 +37,17 @@
     "articles": [
       {
         "slug": "saas-survival",
-        "shortTitle": "本編 AI時代にSaaS企業はどう生き残るべきか",
+        "shortTitle": "本編",
         "lead": "3分で作れる勤怠管理ツールで、あえて新規事業を考えた。機能では戦えない時代の勝ち筋。"
       },
       {
         "slug": "saas-survival-research",
-        "shortTitle": "調査レポート 勤怠・シフト管理サービス参入",
+        "shortTitle": "調査レポート",
         "lead": "市場規模・競合価格・技術構成・API原価試算までを出典付きで整理した根拠データ編。"
       },
       {
         "slug": "saas-survival-discussion",
-        "shortTitle": "有識者討論 この参入戦略は、どこで崩れるか",
+        "shortTitle": "有識者討論",
         "lead": "事業戦略・エンジニア・投資の3人が当事者に異論をぶつける、まとめない討論。"
       }
     ],

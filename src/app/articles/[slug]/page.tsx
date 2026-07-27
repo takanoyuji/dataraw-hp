@@ -108,7 +108,13 @@ export default async function ArticlePage({ params }: Props) {
                   <span className="mr-2 text-blue-300">
                     {seriesContext.positionLabel}
                   </span>
-                  {article.title}
+                  {/* 特集の本編は記事タイトルが特集名と同じことがある。
+                      上の見出しと二重になるので、その場合はラベルだけ出す */}
+                  {article.title ===
+                  (seriesContext.series.titleBase ??
+                    seriesContext.series.name)
+                    ? null
+                    : article.title}
                 </p>
               </>
             ) : (

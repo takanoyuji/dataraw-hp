@@ -193,24 +193,30 @@ function parseStats(raw: string): StatCard[] {
  * 段落の中身が em 1つだけ、かつ直前が h2 のときに限る。
  */
 function rehypeSubheads() {
-  return (tree: Root) => {
-    visit(tree, "element", (node: Element) => {
-      const children = node.children.filter(
-        (c): c is Element => c.type === "element"
+  const markChildren = (parent: Root | Element) => {
+    const elements = parent.children.filter(
+      (c): c is Element => c.type === "element"
+    );
+    elements.forEach((child, i) => {
+      if (child.tagName !== "p") return;
+      if (elements[i - 1]?.tagName !== "h2") return;
+      const inner = child.children.filter(
+        (c) => c.type !== "text" || c.value.trim()
       );
-      children.forEach((child, i) => {
-        if (child.tagName !== "p") return;
-        if (children[i - 1]?.tagName !== "h2") return;
-        const inner = child.children.filter((c) => c.type !== "text" || c.value.trim());
-        if (inner.length !== 1) return;
-        const em = inner[0];
-        if (em.type !== "element" || em.tagName !== "em") return;
+      if (inner.length !== 1) return;
+      const em = inner[0];
+      if (em.type !== "element" || em.tagName !== "em") return;
 
-        child.tagName = "div";
-        child.properties = { ...child.properties, dataSubhead: "true" };
-        child.children = em.children;
-      });
+      child.tagName = "div";
+      child.properties = { ...child.properties, dataSubhead: "true" };
+      child.children = em.children;
     });
+  };
+
+  return (tree: Root) => {
+    // 本文の h2 / p は root 直下に並ぶので、root 自身も走査対象に含める。
+    markChildren(tree);
+    visit(tree, "element", markChildren);
   };
 }
 

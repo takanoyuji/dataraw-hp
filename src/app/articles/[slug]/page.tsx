@@ -75,7 +75,7 @@ export default async function ArticlePage({ params }: Props) {
       {/* 濃紺グラデのヘッダバンド（元HTMLの article-header 相当・ダーク） */}
       <header className="relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-[#1a2332] via-[#212d44] to-black pt-24 pb-24 md:pt-28">
         <div className="absolute -top-24 left-1/4 h-72 w-72 rounded-full bg-blue-600/15 blur-[120px]" />
-        <div className="relative mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <ScrollAnimation>
             <Link
               href="/articles"
@@ -145,7 +145,7 @@ export default async function ArticlePage({ params }: Props) {
       </header>
 
       {/* 白カード本文（元HTMLの article 相当・ライト）。ヘッダに少し重ねる */}
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         <ScrollAnimation delay={150}>
           <article className="-mt-12 rounded-2xl bg-[#fbfbfd] px-5 py-9 shadow-2xl shadow-black/40 ring-1 ring-black/5 md:px-12 md:py-14">
             <ArticleContent content={article.content} />

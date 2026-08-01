@@ -186,6 +186,66 @@ function parseStats(raw: string): StatCard[] {
 }
 
 /**
+ * サブヘッドの直後（サブヘッドが無ければ H2 の直後）にある、太字だけの段落を
+ * その章の主張＝メッセージラインとして扱い、枠付きで見せる。
+ *   ## 業務の7工程分解 …
+ *   *この章で扱うこと*
+ *   **「YouTubeコンサル」はひとつの仕事ではない。**
+ * 章の切れ目で「何を言う章か」を立たせるための層。段落全体が strong 1つの
+ * ときだけ拾うので、文中の強調は巻き込まない。
+ */
+function rehypeMessageLines() {
+  const markChildren = (parent: Root | Element) => {
+    const elements = (parent.children as { type: string }[]).filter(
+      (c): c is Element => c.type === "element"
+    );
+    elements.forEach((child, i) => {
+      if (child.tagName !== "p") return;
+      const prev = elements[i - 1];
+      const afterHeading = prev?.tagName === "h2";
+      const afterSubhead =
+        prev?.tagName === "div" && prev.properties?.dataSubhead === "true";
+      if (!afterHeading && !afterSubhead) return;
+
+      const inner = child.children.filter(
+        (c) => c.type !== "text" || c.value.trim()
+      );
+      if (inner.length !== 1) return;
+      const strong = inner[0];
+      if (strong.type !== "element" || strong.tagName !== "strong") return;
+
+      child.tagName = "div";
+      child.properties = { ...child.properties, dataMessage: "true" };
+      child.children = strong.children;
+    });
+  };
+
+  return (tree: Root) => {
+    markChildren(tree);
+    visit(tree, "element", markChildren);
+  };
+}
+
+/**
+ * 「## 01 業務の7工程分解 …」のように H2 が番号で始まっていたら、
+ * 番号を章のアンカーとして切り出す。番号が無い H2 はそのまま。
+ */
+function rehypeChapterNumbers() {
+  return (tree: Root) => {
+    visit(tree, "element", (node: Element) => {
+      if (node.tagName !== "h2") return;
+      const first = node.children[0];
+      if (first?.type !== "text") return;
+      const m = /^(\d{1,2}|要約|出典)\s+([\s\S]+)$/.exec(first.value);
+      if (!m) return;
+
+      first.value = m[2];
+      node.properties = { ...node.properties, dataChapter: m[1] };
+    });
+  };
+}
+
+/**
  * H2 の直後にあるイタリックだけの段落を、章の内容を示すサブヘッドとして扱う。
  *   ## 業務の7工程分解 自動化しやすさと、成否を決める工程のずれ
  *   *国内の運用支援サービスの提供範囲と料金体系から業務を7工程に分ける*
@@ -273,11 +333,21 @@ function withCurrentBadge(children: ReactNode): ReactNode {
 }
 
 const components: Components = {
-  h2: ({ children }) => (
-    <h2 className="mt-14 mb-5 scroll-mt-24 border-b-2 border-gray-200 pb-3 text-xl font-bold tracking-tight text-[#1a2332] first:mt-0 md:text-2xl">
-      {children}
-    </h2>
-  ),
+  h2: ({ children, ...props }) => {
+    const chapter = (props as Record<string, unknown>)["data-chapter"] as
+      | string
+      | undefined;
+    return (
+      <h2 className="mt-14 mb-5 flex scroll-mt-24 items-baseline gap-3 border-b-2 border-gray-200 pb-3 text-xl font-bold tracking-tight text-[#1a2332] first:mt-0 md:text-2xl">
+        {chapter && (
+          <span className="shrink-0 text-[0.72em] font-extrabold tracking-[0.06em] text-[#2563eb]">
+            {chapter}
+          </span>
+        )}
+        <span>{children}</span>
+      </h2>
+    );
+  },
   h3: ({ children }) => (
     <h3 className="mt-9 mb-3 text-lg font-bold text-gray-800">{children}</h3>
   ),
@@ -285,7 +355,7 @@ const components: Components = {
     <h4 className="mt-7 mb-2 font-bold text-gray-700">{children}</h4>
   ),
   p: ({ children }) => (
-    <p className="my-5 text-[1.02rem] leading-[1.95] text-gray-700">{children}</p>
+    <p className="my-5 text-[1.02rem] leading-[1.85] text-gray-700">{children}</p>
   ),
   strong: ({ children }) => (
     <strong className="font-bold text-[#1a2332]">{children}</strong>
@@ -323,9 +393,9 @@ const components: Components = {
       </table>
     </div>
   ),
-  thead: ({ children }) => <thead className="bg-[#1a2332]">{children}</thead>,
+  thead: ({ children }) => <thead className="bg-gray-100">{children}</thead>,
   th: ({ children }) => (
-    <th className="whitespace-nowrap px-4 py-3 text-left font-semibold text-white">
+    <th className="whitespace-nowrap border-b border-gray-300 px-4 py-3 text-left text-[0.85rem] font-bold text-[#1a2332]">
       {children}
     </th>
   ),
@@ -374,6 +444,14 @@ const components: Components = {
     const compare = attrs["data-compare"] as string | undefined;
     const stats = attrs["data-stats"] as string | undefined;
     const subhead = attrs["data-subhead"] as string | undefined;
+
+    if (attrs["data-message"]) {
+      return (
+        <div className="my-6 rounded-r-lg border-l-4 border-[#2563eb] bg-white px-5 py-4 text-[1.02rem] font-bold leading-[1.8] text-[#1a2332] shadow-sm ring-1 ring-black/5">
+          {children}
+        </div>
+      );
+    }
 
     if (subhead) {
       return (
@@ -514,7 +592,9 @@ export function ArticleContent({ content }: ArticleContentProps) {
           rehypeCallouts,
           rehypeCompare,
           rehypeStats,
+          rehypeChapterNumbers,
           rehypeSubheads,
+          rehypeMessageLines,
           rehypeHighlight,
         ]}
         components={components}

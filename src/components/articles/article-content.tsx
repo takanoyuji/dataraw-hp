@@ -97,7 +97,34 @@ function rehypeCallouts() {
 function calloutVariant(title: string): string {
   if (title.startsWith("連載")) return "series";
   if (/次回|最終回|持ち越/.test(title)) return "teaser";
+  // 留保・反証・注意喚起は琥珀。答え・まとめは緑。それ以外は青。
+  if (/ただし|反証|危ない|一方向|逆を向|残る疑問|限界|注意|落とし穴|リスク/.test(title))
+    return "caution";
+  if (/一文にすると|この章の結論|答え|できるのか$/.test(title)) return "answer";
   return "insight";
+}
+
+/** 表セルの「良い/中/悪い」等を色分けするための語彙 */
+function cellTone(text: string): string | undefined {
+  const t = text.trim();
+  if (/^良い/.test(t) || t === "自動") return "good";
+  if (/^悪い/.test(t) || t === "人" || t === "対象外") return "bad";
+  if (/^中[（(]/.test(t) || t === "中" || t === "半自動" || t === "条件付き")
+    return "warn";
+  if (t === "自動化しやすい") return "good";
+  return undefined;
+}
+
+/** td の中身が評価語なら色を付ける。語彙に一致したセルだけが対象。 */
+function rehypeCellTones() {
+  return (tree: Root) => {
+    visit(tree, "element", (node: Element) => {
+      if (node.tagName !== "td") return;
+      const tone = cellTone(toText(node));
+      if (!tone) return;
+      node.properties = { ...node.properties, dataTone: tone };
+    });
+  };
 }
 
 /**
@@ -165,6 +192,7 @@ function rehypeStats() {
 
 interface StatCard {
   value: string;
+  tone?: string;
   label: string;
   note: string;
 }
@@ -175,9 +203,12 @@ function parseStats(raw: string): StatCard[] {
     .map((block) => block.trim())
     .filter(Boolean)
     .map((block) => {
-      const [value, label = "", ...rest] = block.split("\n");
+      const [rawValue, label = "", ...rest] = block.split("\n");
+      // `### 86.93% [bad]` のように末尾で色を指定できる
+      const m = /^(.*?)\s*\[(good|bad|warn)\]\s*$/.exec(rawValue.trim());
       return {
-        value: value.trim(),
+        value: (m ? m[1] : rawValue).trim(),
+        tone: m ? m[2] : undefined,
         label: label.trim(),
         note: rest.join(" ").trim(),
       };
@@ -399,11 +430,24 @@ const components: Components = {
       {children}
     </th>
   ),
-  td: ({ children }) => (
-    <td className="border-t border-gray-200 px-4 py-3 align-top text-gray-700">
-      {children}
-    </td>
-  ),
+  td: ({ children, ...props }) => {
+    const tone = (props as Record<string, unknown>)["data-tone"] as
+      | string
+      | undefined;
+    const toneClass =
+      tone === "good"
+        ? "font-bold text-emerald-700"
+        : tone === "bad"
+          ? "font-bold text-red-600"
+          : tone === "warn"
+            ? "font-bold text-amber-700"
+            : "text-gray-700";
+    return (
+      <td className={`border-t border-gray-200 px-4 py-3 align-top ${toneClass}`}>
+        {children}
+      </td>
+    );
+  },
   tr: ({ children }) => <tr className="even:bg-gray-50/60">{children}</tr>,
   hr: () => <hr className="my-12 border-gray-200" />,
   img: ({ src, alt }) => (
@@ -477,7 +521,17 @@ const components: Components = {
               <div className="text-[0.78rem] leading-[1.6] text-gray-500">
                 {card.label}
               </div>
-              <div className="my-1 text-[1.75rem] font-extrabold leading-tight tracking-tight text-[#1a2332]">
+              <div
+                className={`my-1 text-[1.75rem] font-extrabold leading-tight tracking-tight ${
+                  card.tone === "good"
+                    ? "text-emerald-700"
+                    : card.tone === "bad"
+                      ? "text-red-600"
+                      : card.tone === "warn"
+                        ? "text-amber-700"
+                        : "text-[#1a2332]"
+                }`}
+              >
                 {card.value}
               </div>
               {card.note && (
@@ -560,6 +614,32 @@ const components: Components = {
       );
     }
 
+    if (variant === "caution" || variant === "answer") {
+      const isWarn = variant === "caution";
+      return (
+        <div
+          className={`my-8 rounded-lg border-l-4 px-6 py-5 ${
+            isWarn
+              ? "border-amber-500 bg-amber-50"
+              : "border-emerald-600 bg-emerald-50"
+          }`}
+        >
+          {title && (
+            <div
+              className={`mb-2 text-[0.78rem] font-bold tracking-[0.08em] ${
+                isWarn ? "text-amber-700" : "text-emerald-700"
+              }`}
+            >
+              {title}
+            </div>
+          )}
+          <div className="text-[0.97rem] leading-[1.9] text-gray-700 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>p]:my-2 [&>p]:text-gray-700">
+            {children}
+          </div>
+        </div>
+      );
+    }
+
     if (variant === "insight") {
       return (
         <div className="my-8 rounded-lg border-l-4 border-[#2563eb] bg-[#eff6ff] px-6 py-5">
@@ -592,6 +672,7 @@ export function ArticleContent({ content }: ArticleContentProps) {
           rehypeCallouts,
           rehypeCompare,
           rehypeStats,
+          rehypeCellTones,
           rehypeChapterNumbers,
           rehypeSubheads,
           rehypeMessageLines,

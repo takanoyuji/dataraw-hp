@@ -132,6 +132,88 @@ function rehypeCompare() {
   };
 }
 
+/**
+ * ```stats フェンスを、大きい数字を並べた指標カードにする。
+ *   ```stats
+ *   ### 5工程
+ *   7工程のうち自動化しうる工程
+ *   企画・タイトル/サムネイル・構成/台本・撮影/編集・分析改善
+ *   ```
+ * `### 値` の次の行がラベル、それ以降が補足。調査系の記事で
+ * 根拠の数字を冒頭に置くために使う。compare と同じく highlight より前に走らせる。
+ */
+function rehypeStats() {
+  return (tree: Root) => {
+    visit(tree, "element", (node: Element) => {
+      if (node.tagName !== "pre") return;
+      const code = node.children[0];
+      if (code?.type !== "element" || code.tagName !== "code") return;
+
+      const className = code.properties?.className;
+      const languages = Array.isArray(className) ? className.map(String) : [];
+      if (!languages.includes("language-stats")) return;
+
+      const cards = parseStats(toText(code));
+      if (cards.length === 0) return;
+
+      node.tagName = "div";
+      node.children = [];
+      node.properties = { dataStats: JSON.stringify(cards) };
+    });
+  };
+}
+
+interface StatCard {
+  value: string;
+  label: string;
+  note: string;
+}
+
+function parseStats(raw: string): StatCard[] {
+  return raw
+    .split(/^###\s+/m)
+    .map((block) => block.trim())
+    .filter(Boolean)
+    .map((block) => {
+      const [value, label = "", ...rest] = block.split("\n");
+      return {
+        value: value.trim(),
+        label: label.trim(),
+        note: rest.join(" ").trim(),
+      };
+    })
+    .filter((card) => card.value && card.label);
+}
+
+/**
+ * H2 の直後にあるイタリックだけの段落を、章の内容を示すサブヘッドとして扱う。
+ *   ## 業務の7工程分解 自動化しやすさと、成否を決める工程のずれ
+ *   *国内の運用支援サービスの提供範囲と料金体系から業務を7工程に分ける*
+ * 日本語ではイタリックを他に使わないので、マーカーとして安全に使える。
+ * 段落の中身が em 1つだけ、かつ直前が h2 のときに限る。
+ */
+function rehypeSubheads() {
+  return (tree: Root) => {
+    visit(tree, "element", (node: Element) => {
+      const children = node.children.filter(
+        (c): c is Element => c.type === "element"
+      );
+      children.forEach((child, i) => {
+        if (child.tagName !== "p") return;
+        if (children[i - 1]?.tagName !== "h2") return;
+        const inner = child.children.filter((c) => c.type !== "text" || c.value.trim());
+        if (inner.length !== 1) return;
+        const em = inner[0];
+        if (em.type !== "element" || em.tagName !== "em") return;
+
+        child.tagName = "div";
+        child.properties = { ...child.properties, dataSubhead: "true" };
+        child.children = em.children;
+      });
+    });
+  };
+}
+
 interface CompareCard {
   label: string;
   items: string[];
@@ -283,6 +365,46 @@ const components: Components = {
     const variant = attrs["data-callout"] as string | undefined;
     const title = attrs["data-callout-title"] as string | undefined;
     const compare = attrs["data-compare"] as string | undefined;
+    const stats = attrs["data-stats"] as string | undefined;
+    const subhead = attrs["data-subhead"] as string | undefined;
+
+    if (subhead) {
+      return (
+        <div className="-mt-3 mb-6 text-[0.88rem] leading-[1.8] text-gray-500">
+          {children}
+        </div>
+      );
+    }
+
+    if (stats) {
+      const cards = JSON.parse(stats) as StatCard[];
+      return (
+        <div
+          className={`my-8 grid gap-4 ${
+            cards.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"
+          }`}
+        >
+          {cards.map((card) => (
+            <div
+              key={card.value + card.label}
+              className="rounded-xl border border-gray-200 bg-gray-50 px-5 py-4"
+            >
+              <div className="text-[0.78rem] leading-[1.6] text-gray-500">
+                {card.label}
+              </div>
+              <div className="my-1 text-[1.75rem] font-extrabold leading-tight tracking-tight text-[#1a2332]">
+                {card.value}
+              </div>
+              {card.note && (
+                <div className="text-[0.8rem] leading-[1.7] text-gray-500">
+                  {card.note}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
 
     if (compare) {
       const cards = JSON.parse(compare) as CompareCard[];
@@ -381,7 +503,13 @@ export function ArticleContent({ content }: ArticleContentProps) {
     <div className="article-body max-w-none">
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkCjkStrong]}
-        rehypePlugins={[rehypeCallouts, rehypeCompare, rehypeHighlight]}
+        rehypePlugins={[
+          rehypeCallouts,
+          rehypeCompare,
+          rehypeStats,
+          rehypeSubheads,
+          rehypeHighlight,
+        ]}
         components={components}
       >
         {content}

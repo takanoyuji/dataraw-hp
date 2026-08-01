@@ -194,7 +194,8 @@ function parseStats(raw: string): StatCard[] {
  */
 function rehypeSubheads() {
   const markChildren = (parent: Root | Element) => {
-    const elements = parent.children.filter(
+    // Root と Element で children の型が違い、union のままだと型述語が効かない
+    const elements = (parent.children as { type: string }[]).filter(
       (c): c is Element => c.type === "element"
     );
     elements.forEach((child, i) => {

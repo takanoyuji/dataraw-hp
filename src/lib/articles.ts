@@ -13,7 +13,14 @@ export function getArticleSlugs(): string[] {
     .map((file) => file.replace(/\.md$/, ""));
 }
 
+// slug はファイル名になるので、英数字とハイフンだけに絞る（../ で記事フォルダの外を読み書きさせない）
+const SLUG_RE = /^[a-z0-9-]{1,100}$/i;
+export function isValidSlug(slug: string): boolean {
+  return SLUG_RE.test(slug);
+}
+
 export function getArticleBySlug(slug: string): Article | null {
+  if (!isValidSlug(slug)) return null;
   const filePath = path.join(articlesDirectory, `${slug}.md`);
   if (!fs.existsSync(filePath)) return null;
 
@@ -66,12 +73,14 @@ export function getAllTags(): string[] {
 }
 
 export function saveArticle(slug: string, article: Omit<Article, "slug">): void {
+  if (!isValidSlug(slug)) throw new Error("slug は英数字とハイフンのみ");
   const { content, ...frontmatter } = article;
   const md = matter.stringify(content, frontmatter);
   fs.writeFileSync(path.join(articlesDirectory, `${slug}.md`), md);
 }
 
 export function deleteArticle(slug: string): boolean {
+  if (!isValidSlug(slug)) return false;
   const filePath = path.join(articlesDirectory, `${slug}.md`);
   if (!fs.existsSync(filePath)) return false;
   fs.unlinkSync(filePath);

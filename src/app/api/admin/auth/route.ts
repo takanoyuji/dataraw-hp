@@ -1,12 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSessionCookieConfig, verifyAdmin } from "@/lib/admin-auth";
+import { checkAdminPassword, getSessionCookieConfig, verifyAdmin } from "@/lib/admin-auth";
+
+// 総当たり対策: 同じIPから15分に10回まで失敗を許す（コンテナ1つなのでメモリで数える）
+const FAIL_LIMIT = 10;
+const FAIL_WINDOW_MS = 15 * 60 * 1000;
+const failures = new Map<string, { count: number; resetAt: number }>();
+
+function clientIp(req: NextRequest): string {
+  // nginx が上書きする X-Real-IP を使う（X-Forwarded-For の先頭は偽れる）
+  return req.headers.get("x-real-ip")?.trim() || "unknown";
+}
+
+function isLocked(ip: string): boolean {
+  const f = failures.get(ip);
+  if (!f || f.resetAt <= Date.now()) return false;
+  return f.count >= FAIL_LIMIT;
+}
+
+function recordFailure(ip: string) {
+  const now = Date.now();
+  const f = failures.get(ip);
+  if (!f || f.resetAt <= now) failures.set(ip, { count: 1, resetAt: now + FAIL_WINDOW_MS });
+  else f.count += 1;
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const { password } = await request.json();
-    const adminPassword = process.env.ADMIN_PASSWORD || "admin";
+    const ip = clientIp(request);
+    if (isLocked(ip)) {
+      return NextResponse.json(
+        { error: "試行回数が多すぎます。しばらく待ってから再度お試しください" },
+        { status: 429 }
+      );
+    }
 
-    if (password !== adminPassword) {
+    const { password } = await request.json();
+    if (!checkAdminPassword(password)) {
+      recordFailure(ip);
       return NextResponse.json({ error: "パスワードが正しくありません" }, { status: 401 });
     }
 

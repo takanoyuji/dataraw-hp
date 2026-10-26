@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getComments, addComment, countRecentByIp, hashIp } from "@/lib/comments";
+import { getArticleBySlug } from "@/lib/articles";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// nginx が上書きする X-Real-IP を使う。X-Forwarded-For の先頭は送り手が偽れるので、
+// それで数えるとレート制限をすり抜けられる（2026-10-26 修正）
 function clientIp(req: NextRequest): string | null {
-  const xff = req.headers.get("x-forwarded-for");
-  if (xff) return xff.split(",")[0].trim();
   return req.headers.get("x-real-ip");
 }
 
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true }, { status: 200 });
     }
 
-    if (!slug || !/^[a-z0-9-]{1,100}$/i.test(slug)) {
+    if (!slug || !/^[a-z0-9-]{1,100}$/i.test(slug) || !getArticleBySlug(slug)) {
       return NextResponse.json({ error: "不正な記事です。" }, { status: 400 });
     }
     if (!name || name.length > 50) {

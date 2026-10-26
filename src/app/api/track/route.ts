@@ -6,8 +6,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function clientIp(req: NextRequest): string {
-  const xff = req.headers.get("x-forwarded-for");
-  if (xff) return xff.split(",")[0].trim();
+  // nginx が上書きする X-Real-IP を使う（X-Forwarded-For の先頭は偽れる）
   return req.headers.get("x-real-ip") || "0.0.0.0";
 }
 

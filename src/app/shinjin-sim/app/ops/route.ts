@@ -19,8 +19,8 @@ export async function GET(req: Request) {
   const msg = MSG[new URL(req.url).searchParams.get("m") ?? ""];
   const rows = listCompanies().map((c) => {
     const admins = listMembers(c.id).filter((m) => m.role === "admin").map((m) => `${esc(m.name)}（${esc(m.email)}）`).join("<br>");
-    return `<tr><td>${c.id}</td><td>${esc(c.name)}${c.status !== "active" ? ' <span class="tag ng">停止</span>' : ""}</td>
-<td>${c.plan === "trial" ? `トライアル<br><span class="sub">${jst(c.trial_ends_at)} まで</span>` : "契約"}</td><td>${c.seat_limit}人</td><td>${c.members}人</td><td>${c.attempts}回</td><td class="wrap">${admins}</td>
+    return `<tr><td>${c.id}</td><td>${esc(c.name)}${c.status !== "active" ? ' <span class="tag ng">停止</span>' : ""}<br><span class="sub">${c.source === "self" ? "LPから申込" : "運営が作成"} ${jst(c.created_at)}</span></td>
+<td>${c.plan === "trial" ? `トライアル<br><span class="sub">${jst(c.trial_ends_at)} まで</span>` : "契約"}</td><td>${c.seat_limit}人</td><td>${c.members}人</td><td>${c.attempts}回</td><td class="wrap">${admins}${c.phone ? `<br><span class="sub">電話 ${esc(c.phone)}</span>` : ""}</td>
 <td><form method="post" action="${BASE}/ops/companies" class="row" style="gap:6px"><input type="hidden" name="id" value="${c.id}">
 ${c.status === "active" ? '<button class="btn ghost small" name="action" value="stop">止める</button>' : '<button class="btn ghost small" name="action" value="start">再開</button>'}
 ${c.plan === "trial" ? '<button class="btn ghost small" name="action" value="paid">契約にする</button><button class="btn ghost small" name="action" value="extend">7日延長</button>' : ""}
@@ -29,7 +29,7 @@ ${c.plan === "trial" ? '<button class="btn ghost small" name="action" value="pai
   }).join("");
   return page("運営", `
 ${msg ? `<p class="msg${msg[1] ? " ng" : ""}">${esc(msg[0])}</p>` : ""}
-<section><h1>運営: 会社の一覧</h1><p class="sub">ここで作った会社の人事担当が、自分で社員を招待します。</p></section>
+<section><h1>運営: 会社の一覧</h1><p class="sub">LP から申し込むと、メール確認のあと自動でここに並びます（5人・2週間）。終了の2日前に通知メールが届きます。人事担当が自分で社員を招待します。</p></section>
 <section class="card"><div class="scroll"><table><thead><tr><th>#</th><th>会社</th><th>プラン</th><th>上限</th><th>登録</th><th>記録</th><th>人事</th><th></th></tr></thead>
 <tbody>${rows || '<tr><td colspan="8" class="sub">まだありません</td></tr>'}</tbody></table></div></section>
 <section class="card"><h2>会社を作って、人事の方を招待する</h2>

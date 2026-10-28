@@ -244,6 +244,10 @@ label{font-size:.85rem;font-weight:700;display:grid;gap:6px}
 label span{font-weight:400;color:var(--sub);font-size:.75rem}
 input,select{font:inherit;font-size:16px;border:1px solid #c9d1dc;border-radius:10px;padding:12px;background:#fff;color:var(--ink);width:100%}
 form .cta{width:100%}
+label.agree{display:flex;align-items:center;gap:10px;font-weight:400;font-size:.9rem}
+label.agree input{width:22px;height:22px;flex:none;margin:0;accent-color:var(--orange)}
+label.agree span{font-size:inherit;color:inherit}
+label.agree a{color:inherit}
 .sent{background:#eaf6ef;color:var(--ok);border-radius:10px;padding:12px;font-size:.9rem}
 footer{padding-block:28px;font-size:.8rem;color:var(--sub)}
 footer .wrap{display:flex;flex-wrap:wrap;gap:8px 20px}
@@ -283,7 +287,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 20px}
 <header class="top">
   <div class="wrap">
     <span class="logo">新人しごとシミュレーター<small>法人プラン</small></span>
-    <a class="cta-s" href="#apply">無料トライアルを相談</a>
+    <a class="cta-s" href="#apply">無料で始める</a>
   </div>
 </header>
 
@@ -296,8 +300,8 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 20px}
       <p class="sub">社会人の基本コミュニケーションを、<br>ゲームで何度も練習させる新人研修</p>
       <p class="lead">報連相、確認、断り方、頼み方。上司の無茶ぶりにどう返すかを、<span style="white-space:nowrap">1話5分</span>のゲームでくり返す。法人プランは<b>貴社のルールで作る専用の10話</b>付き。誰がどの場面で何を選んだかも、全員分残る。</p>
       <div class="acts">
-        <a class="cta" href="#apply">5人・2週間の無料トライアルを相談する</a>
-        <p class="micro">※費用なし・契約の義務なし</p>
+        <a class="cta" href="#apply">5人・2週間、無料で始める</a>
+        <p class="micro">※費用なし・契約の義務なし。メール確認のあと、すぐ使える</p>
         <a class="demo" href="/shinjin-sim/play">無料版（共通の10話）を先に遊ぶ ※登録不要</a>
       </div>
     </div>
@@ -352,7 +356,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 20px}
     </ul>
     <div class="tclose">
       <p>どれも、知識の問題ではなく<em>その場で返す練習</em>の問題。<br>現場でしくじる前に、ゲームで10回しくじらせる</p>
-      <a class="cta" href="#apply">5人・2週間の無料トライアルを相談する</a>
+      <a class="cta" href="#apply">5人・2週間、無料で始める</a>
     </div>
   </div>
 </section>
@@ -615,13 +619,13 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 20px}
     <div>
       <p class="eyebrow">無料トライアル</p>
       <h2 id="h-apply">まず5人、2週間。<br>詰まる場面が見えてくる</h2>
-      <p class="lead">まずはトライアルでお試しください。</p>
+      <p class="lead">申し込んだその日から、管理画面と共通の10話が使える。</p>
       <p class="note">※トライアルでも管理画面利用可能<br>※貴社専用の10話はご契約後作成</p>
       <ol>
-        <li>このフォームから相談する</li>
-        <li>オンラインで15分、使い方と人数を確認</li>
-        <li>招待メールを送って、2週間遊んでもらう</li>
-        <li>結果を一緒に見て、続けるか決める</li>
+        <li>このフォームから申し込む</li>
+        <li>届いたメールのリンクを押す。すぐ管理画面に入れる</li>
+        <li>新人の方を5人まで招待して、2週間遊んでもらう</li>
+        <li>終わる前にご連絡。結果を見て、続けるか決める</li>
       </ol>
     </div>
     <form id="apply-form" novalidate>
@@ -629,11 +633,10 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 20px}
       <label for="f-company">会社名<input id="f-company" name="company" autocomplete="organization" required></label>
       <label for="f-name">お名前<input id="f-name" name="name" autocomplete="name" required></label>
       <label for="f-mail">メールアドレス<input id="f-mail" name="email" type="email" autocomplete="email" inputmode="email" required></label>
-      <label for="f-size">使いたい人数<span>だいたいで可</span>
-        <select id="f-size" name="size"><option>5人まで</option><option>6〜20人</option><option>21〜50人</option><option>51人以上</option></select>
-      </label>
-      <button class="cta" type="submit">無料トライアルを相談する</button>
-      <p class="micro" style="margin:0">※営業電話なし。返信はメールで<br>※入力内容は<a href="/privacy-policy" target="_blank" rel="noopener">プライバシーポリシー</a>に沿って扱います</p>
+      <label for="f-tel">電話番号<input id="f-tel" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="03-1234-5678" required></label>
+      <label class="agree" for="f-agree"><input id="f-agree" name="agree" type="checkbox" value="1" required><span><a href="/privacy-policy" target="_blank" rel="noopener">プライバシーポリシー</a>に同意する</span></label>
+      <button class="cta" type="submit">5人・2週間、無料で始める</button>
+      <p class="micro" style="margin:0">※確認メールのリンクを押すと始まります<br>※電話番号は、トライアル中の連絡用</p>
       <p class="sent" id="sent" hidden></p>
     </form>
   </div>
@@ -649,15 +652,18 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 20px}
   </div>
 </footer>
 
-<div class="sticky"><a class="cta" href="#apply">無料トライアルを相談する</a></div>
+<div class="sticky"><a class="cta" href="#apply">5人・2週間、無料で始める</a></div>
 
 <script>
 document.getElementById('apply-form').addEventListener('submit', function (e) {
   e.preventDefault();
   var f = e.target, bad = [];
-  ['f-company', 'f-name', 'f-mail'].forEach(function (id) { var el = document.getElementById(id); if (!el.value.trim()) bad.push(el.previousSibling.textContent.trim()); });
+  ['f-company', 'f-name', 'f-mail', 'f-tel'].forEach(function (id) { var el = document.getElementById(id); if (!el.value.trim()) bad.push(el.previousSibling.textContent.trim()); });
   var mail = document.getElementById('f-mail').value.trim();
   if (mail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) bad.push('メールアドレスの形');
+  var tel = document.getElementById('f-tel').value.replace(/[^0-9０-９+＋]/g, '');
+  if (tel && !/^(0|\+81|＋81)[0-9０-９]{9,10}$/.test(tel)) bad.push('電話番号の形');
+  if (!document.getElementById('f-agree').checked) bad.push('プライバシーポリシーへの同意');
   var out = document.getElementById('sent');
   out.hidden = false;
   if (bad.length) { out.style.background = '#fdecef'; out.style.color = 'var(--ng)'; out.textContent = '入力を確かめてください: ' + bad.join('・'); return; }
@@ -665,14 +671,19 @@ document.getElementById('apply-form').addEventListener('submit', function (e) {
   var btn = f.querySelector('button[type=submit]');
   btn.disabled = true;
   out.textContent = '送信中…';
-  var v = function (id) { return document.getElementById(id).value; };
-  var data = { source: 'shinjin-sim', company: v('f-company'), name: v('f-name'), email: v('f-mail'), size: v('f-size'), website: f.querySelector('[name=website]').value };
-  fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-    .then(function (r) {
-      if (!r.ok) throw new Error(r.status);
+  // 2026-10-29〜 相談フォームから、無料トライアルの申し込みに変えた（メール確認のあと自動で始まる）
+  fetch('/shinjin-sim/app/signup', { method: 'POST', body: new FormData(f) })
+    .then(function (r) { return r.json().catch(function () { return { ok: false }; }); })
+    .then(function (j) {
+      if (!j.ok) {
+        out.style.background = '#fdecef'; out.style.color = 'var(--ng)';
+        out.textContent = j.error || '送信できませんでした。時間をおいてもう一度お試しください。';
+        return;
+      }
+      var to = document.getElementById('f-mail').value.trim();
       f.reset();
-      out.textContent = '受け付けました。返信はメールでお送りします。';
-      if (window.gtag) gtag('event', 'generate_lead', { form: 'shinjin-sim' });
+      out.textContent = to + ' に確認メールを送りました。メールのリンクを押すと、トライアルが始まります（24時間有効）。届かないときは迷惑メールのフォルダもご確認ください。';
+      if (window.gtag) gtag('event', 'generate_lead', { form: 'shinjin-sim-trial' });
     })
     .catch(function () {
       out.style.background = '#fdecef'; out.style.color = 'var(--ng)';

@@ -10,6 +10,8 @@ const MSG: Record<string, [string, boolean]> = {
   sent: ["登録があれば、ログイン用のリンクをメールで送りました。30分以内に開いてください。", false],
   expired: ["リンクの期限が切れているか、すでに使われています。もう一度メールアドレスを入れてください。", true],
   out: ["ログアウトしました。", false],
+  signup_expired: ["確認リンクの期限が切れているか、すでに使われています。すでに登録が済んでいれば、下からログインできます。", true],
+  signup_dup: ["このメールアドレスは登録済みです。下からログインしてください。", true],
 };
 
 export async function GET(req: Request) {
@@ -27,7 +29,7 @@ export async function GET(req: Request) {
     <label>メールアドレス<input name="email" type="email" autocomplete="email" inputmode="email" required></label>
     <button class="btn" type="submit">ログイン用のリンクを送る</button>
   </form>
-  <p class="note">※招待されていないアドレスには届きません<br>※法人プランの相談は <a href="/shinjin-sim">こちら</a></p>
+  <p class="note">※招待されていないアドレスには届きません<br>※無料トライアルのお申し込みは <a href="/shinjin-sim#apply">こちら</a></p>
 </section>`);
   }
 

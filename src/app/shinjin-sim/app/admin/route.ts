@@ -16,6 +16,7 @@ const MSG: Record<string, [string, boolean]> = {
   stopped: ["止めました。この人はログインできなくなり、記録は残ります。", false],
   started: ["再開しました。", false],
   self: ["自分自身は止められません。", true],
+  welcome: ["無料トライアルが始まりました（5人・2週間）。下の「人を招待する」から、新人の方を招待してください。招待した方にはメールでログイン用のリンクが届きます。", false],
 };
 
 export async function GET(req: Request) {

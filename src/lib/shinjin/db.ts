@@ -75,7 +75,27 @@ export function db(): Database.Database {
     );
     CREATE INDEX IF NOT EXISTS idx_attempts_member ON attempts(member_id, created_at);
     CREATE INDEX IF NOT EXISTS idx_attempts_company ON attempts(company_id, created_at);
+    -- LP からの申し込み（2026-10-29〜）。メールのリンクを押すまでは会社を作らない
+    CREATE TABLE IF NOT EXISTS signups (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hash TEXT NOT NULL UNIQUE,                  -- 確認リンクのトークンのハッシュ
+      company TEXT NOT NULL,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      ip TEXT NOT NULL DEFAULT '',
+      expires_at TEXT NOT NULL,
+      used_at TEXT,
+      company_id INTEGER REFERENCES companies(id),
+      created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_signups_created ON signups(created_at);
   `);
+  // 後から足した列（既存のDBには ALTER で足す）
+  const cols = new Set((d.prepare(`PRAGMA table_info(companies)`).all() as { name: string }[]).map((c) => c.name));
+  if (!cols.has("phone")) d.exec(`ALTER TABLE companies ADD COLUMN phone TEXT NOT NULL DEFAULT ''`);
+  if (!cols.has("source")) d.exec(`ALTER TABLE companies ADD COLUMN source TEXT NOT NULL DEFAULT 'ops'`); // ops（運営が作成）/ self（LPから申し込み）
+  if (!cols.has("end_notified_at")) d.exec(`ALTER TABLE companies ADD COLUMN end_notified_at TEXT`);
   _db = d;
   return d;
 }
@@ -84,6 +104,7 @@ export const now = () => new Date().toISOString();
 
 export interface Company {
   id: number; name: string; status: string; plan: string; seat_limit: number; trial_ends_at: string | null; created_at: string;
+  phone: string; source: string; end_notified_at: string | null;
 }
 export interface Member {
   id: number; company_id: number; email: string; name: string; dept: string; role: string; status: string;
@@ -94,12 +115,12 @@ export interface Attempt {
   down: number; minus: string; path: string; game_version: string | null; created_at: string;
 }
 
-// ── 会社（運営だけが作る）──
-export function createCompany(name: string, trialDays: number, seatLimit: number): number {
+// ── 会社（運営が /ops で作るか、LP の申し込みで作る）──
+export function createCompany(name: string, trialDays: number, seatLimit: number, extra: { phone?: string; source?: "ops" | "self" } = {}): number {
   const ends = new Date(Date.now() + trialDays * 86400_000).toISOString();
   return Number(db().prepare(
-    `INSERT INTO companies (name, seat_limit, trial_ends_at, created_at) VALUES (?, ?, ?, ?)`
-  ).run(name, seatLimit, ends, now()).lastInsertRowid);
+    `INSERT INTO companies (name, seat_limit, trial_ends_at, phone, source, created_at) VALUES (?, ?, ?, ?, ?, ?)`
+  ).run(name, seatLimit, ends, extra.phone ?? "", extra.source ?? "ops", now()).lastInsertRowid);
 }
 export function getCompany(id: number): Company | undefined {
   return db().prepare(`SELECT * FROM companies WHERE id = ?`).get(id) as Company | undefined;

@@ -64,11 +64,15 @@ export function consumeToken(raw: string): { who: Who; session: string } | null 
   // 同時に2回押されても、1回しか通らないよう used_at IS NULL を条件に更新する
   const ok = db().prepare(`UPDATE login_tokens SET used_at = ? WHERE hash = ? AND used_at IS NULL`).run(now(), sha(raw)).changes === 1;
   if (!ok) return null;
+  return { who, session: startSession(who.member.id) };
+}
+/** セッションを作り、Cookie に入れる値を返す */
+export function startSession(memberId: number): string {
   const session = rand();
   db().prepare(`INSERT INTO sessions (hash, member_id, expires_at, created_at) VALUES (?, ?, ?, ?)`)
-    .run(sha(session), who.member.id, new Date(Date.now() + SESSION_DAYS * 86400_000).toISOString(), now());
-  db().prepare(`UPDATE members SET last_login_at = ? WHERE id = ?`).run(now(), who.member.id);
-  return { who, session };
+    .run(sha(session), memberId, new Date(Date.now() + SESSION_DAYS * 86400_000).toISOString(), now());
+  db().prepare(`UPDATE members SET last_login_at = ? WHERE id = ?`).run(now(), memberId);
+  return session;
 }
 
 // ── セッション ──

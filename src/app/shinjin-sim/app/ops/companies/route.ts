@@ -38,7 +38,7 @@ export async function POST(req: Request) {
   else if (action === "paid") db().prepare(`UPDATE companies SET plan = 'paid' WHERE id = ?`).run(c.id);
   else if (action === "extend") {
     const base = Math.max(Date.now(), c.trial_ends_at ? Date.parse(c.trial_ends_at) : 0);
-    db().prepare(`UPDATE companies SET trial_ends_at = ? WHERE id = ?`).run(new Date(base + 7 * 86400_000).toISOString(), c.id);
+    db().prepare(`UPDATE companies SET trial_ends_at = ?, end_notified_at = NULL WHERE id = ?`).run(new Date(base + 7 * 86400_000).toISOString(), c.id);
   } else if (action === "seats") db().prepare(`UPDATE companies SET seat_limit = ? WHERE id = ?`).run(num(f.get("seats"), 1, 500, c.seat_limit), c.id);
   else return back("bad");
   return back("done");

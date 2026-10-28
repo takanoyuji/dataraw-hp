@@ -615,10 +615,11 @@ h1,h2,h3{font-family:var(--head);font-weight:800;margin:0;text-wrap:balance}
   <div class="hero-ava" aria-hidden="true" id="heroAva"></div>
   <div class="stack">
     <p class="mode-h">あそぶ場面をえらぶ</p>
-    <button class="btn mode-btn" id="toSelect" type="button"><span class="mode-tag">職場編</span>上司と1日すごす<small>上司の様子を読んで、返し方を選ぶ・1回5分</small></button>
+    <button class="btn mon mode-btn" id="toMon2" type="button"><span class="mode-tag">モンスター編</span>モフ太の出世物語<small>新人ねこが、上司のゴウダより偉くなるまで・全10話・1話5分</small></button>
+    <button class="btn mode-btn" id="toSelect" type="button"><span class="mode-tag">職場編</span><span class="new">試作</span>上司と1日すごす<small>上司の様子を読んで、返し方を選ぶ・1回5分</small></button>
     <button class="btn blue mode-btn" id="toStory" type="button"><span class="mode-tag">日常編</span><span class="new">試作</span>家族・友達の頼まれごと<small>おつかい・幹事・誕生日会・1話2〜5分</small></button>
-    <button class="btn mon mode-btn" id="toMon" type="button"><span class="mode-tag">モンスター編</span><span class="new">試作</span>モンスター上司の理不尽バトル<small>上司の理不尽な命令を、うまくかわす・1話5分</small></button>
-    <button class="btn mon mode-btn" id="toMon2" type="button"><span class="mode-tag">モンスター編</span><span class="new">新キャラ版</span>モフ太の出世物語<small>新人ねこが、上司のゴウダより偉くなるまで・全10話（いまは第5話まで）</small></button>
+    <!-- 2026-10-28 理不尽バトル（元の4話版）は非表示。中身は出世物語の第1〜4話に引きついだ -->
+    <button class="btn mon mode-btn" id="toMon" type="button" hidden><span class="mode-tag">モンスター編</span><span class="new">試作</span>モンスター上司の理不尽バトル<small>上司の理不尽な命令を、うまくかわす・1話5分</small></button>
     <button class="extra-link" id="toDojo" type="button"><span>練習</span>型ドリル（1つの型を5問で練習）</button>
     <div class="howto sticker">
       <h2>職場編のあそびかた</h2>
@@ -636,13 +637,13 @@ h1,h2,h3{font-family:var(--head);font-weight:800;margin:0;text-wrap:balance}
     </div>
     <div class="pro sticker">
       <small>研修担当の方へ</small>
-      <h2>新人研修で、チーム全員の「動き方のくせ」を数字で</h2>
+      <h2>新人研修で、誰がどの場面でつまずいたかを全員分</h2>
       <ul>
-        <li>同僚・クライアントの場面と、7日間のストーリー</li>
-        <li>受講者全員の結果をまとめて見られる管理画面</li>
-        <li>研修の前と後で、選び方がどう変わったかを比較</li>
+        <li>「モフ太の出世物語」10話に、貴社のルールで作る専用の10話を追加</li>
+        <li>全員の進み具合と、つまずいた場面を管理画面で</li>
+        <li>5人・2週間の無料トライアルあり</li>
       </ul>
-      <a class="btn contact-link" data-from="title" href="#" target="_blank" rel="noopener">法人版について問い合わせる</a>
+      <a class="btn contact-link" data-from="title" href="#" target="_blank" rel="noopener">法人プランを見る</a>
     </div>
     <p class="note">※このゲームはフィクションです。登場する人物・会社は、よくある職場の場面を組み合わせた架空のもので、実在の人物・団体とは関係ありません。正解は「この場面ではこれがよりよい」という一例で、職場や相手によって変わります。<br>着想: <a href="https://landsknecht.jp/tsume/" target="_blank" rel="noopener">コンサル詰めシミュレーター</a>（landsknecht.jp）から着想を得て、新人の職場向けに独自に作りました。</p>
   </div>
@@ -814,12 +815,12 @@ h1,h2,h3{font-family:var(--head);font-weight:800;margin:0;text-wrap:balance}
     <a class="btn share" id="rShare" href="#" target="_blank" rel="noopener"><svg class="x-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.9 2H22l-7.2 8.2L23 22h-6.6l-5.1-6.7L5.4 22H2.3l7.7-8.8L2 2h6.8l4.6 6.1zm-1.1 18h1.7L7.3 3.9H5.5z"/></svg>結果をシェア</a>
     <div class="pro sticker">
       <small>研修担当の方へ</small>
-      <h2>この結果を、チーム全員分まとめて見られます</h2>
+      <h2>新人全員の結果を、まとめて見られます</h2>
       <ul>
-        <li>「抱え込みが4割」「悪い報告が遅い人が3人」のように、チームの傾向を数字で</li>
-        <li>研修の前と後で、同じゲームの選び方を比べて効果を測る</li>
+        <li>誰がどこまで進んだか、どの場面でつまずいたかを全員分</li>
+        <li>やり直しも含めて、1回ごとに残る</li>
       </ul>
-      <a class="btn contact-link" data-from="result" href="#" target="_blank" rel="noopener">法人版について問い合わせる</a>
+      <a class="btn contact-link" data-from="result" href="#" target="_blank" rel="noopener">法人プランを見る</a>
     </div>
     <button class="btn sub" id="rTop" type="button">タイトルにもどる</button>
   </div>

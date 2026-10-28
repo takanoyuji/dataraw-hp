@@ -5326,6 +5326,9 @@ function epResult(){
   epCount($('#stPts'), e.pts);
   sfx(e.stars >= 2 ? 'fanfare' : 'sad');
   track('ep_end', {ep:SQ.ep, stars:e.stars});
+  /* 法人プラン（dataraw.jp/shinjin-sim/app）では、1回ごとの結果をサーバーに送る。無料版には SIM_HOOK が無い */
+  if (window.SIM_HOOK) try { window.SIM_HOOK.result({ep:SQ.ep, kind:E.kind || 'daily', no:E.no, title:E.title, pts:e.pts, stars:e.stars, down:SQ.st.hp !== undefined && SQ.st.hp <= 0,
+    minus:(SQ.st.minus || []).map(m => ({pt:m[0], why:m[1]})), path:SQ.path.map(p => ({id:p.id, text:p.text, note:p.note}))}); } catch (err) {}
 }
 /* 点数を0から数え上げる */
 function epCount(el, to){

@@ -40,6 +40,8 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/content ./content
+# 新人しごとシミュレーター法人プランのゲーム。ログインした人にだけ返すので public/ でなくここ
+COPY --from=builder /app/private ./private
 # OGP画像生成に使う日本語フォント。静的生成済みだが、オンデマンド生成に
 # フォールバックした場合に豆腐にならないよう実行イメージにも入れておく
 COPY --from=builder /app/assets ./assets

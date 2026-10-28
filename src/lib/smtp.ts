@@ -3,7 +3,8 @@ import tls from "tls";
 /**
  * 通知メールの送信（Gmail / Google Workspace の SMTP に TLS で直接つなぐ）。
  * - 2026-10-28: nodemailer は脆弱性の無い版がどれも公開2週間未満だったため、依存を足さずに書いた。
- * - 宛先・差出人は環境変数で固定。フォームの入力は本文と Reply-To にしか入れない（宛先は変えられない）。
+ * - 差出人は環境変数で固定。お問い合わせの宛先は CONTACT_TO。フォームの入力は本文と Reply-To にしか入れない。
+ * - 新人しごとシミュレーターの招待・ログインのメールだけ、登録済みのメンバーのアドレスを to に渡す。
  * - 環境変数: SMTP_USER（差出人。takano@dataraw.jp）/ SMTP_PASS（アプリパスワード）/ CONTACT_TO（通知先）
  */
 
@@ -27,15 +28,19 @@ function wrap76(b64: string): string {
   return b64.replace(/.{1,76}/g, "$&\r\n");
 }
 
-export async function sendMail(input: { subject: string; text: string; replyTo?: string }): Promise<void> {
+const ADDR = /^[^@\s<>"]+@[^@\s<>"]+\.[^@\s<>"]+$/;
+
+/** to を省くと CONTACT_TO（運営）宛て。to を渡すのは招待・ログインのメールだけ */
+export async function sendMail(input: { subject: string; text: string; replyTo?: string; to?: string; fromName?: string }): Promise<void> {
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
-  const to = process.env.CONTACT_TO;
+  const to = input.to ?? process.env.CONTACT_TO;
   if (!user || !pass || !to) throw new Error("SMTP_USER / SMTP_PASS / CONTACT_TO が未設定");
+  if (!ADDR.test(to)) throw new Error("宛先の形が正しくない");
 
-  const replyTo = input.replyTo && /^[^@\s<>"]+@[^@\s<>"]+\.[^@\s<>"]+$/.test(input.replyTo) ? input.replyTo : null;
+  const replyTo = input.replyTo && ADDR.test(input.replyTo) ? input.replyTo : null;
   const headers = [
-    `From: ${encodeHeader("dataraw.jp フォーム")} <${user}>`,
+    `From: ${encodeHeader(input.fromName ?? "dataraw.jp フォーム")} <${user}>`,
     `To: <${to}>`,
     ...(replyTo ? [`Reply-To: <${replyTo}>`] : []),
     `Subject: ${encodeHeader(input.subject)}`,

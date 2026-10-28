@@ -4,7 +4,7 @@ export function Footer() {
   return (
     <footer className="relative bg-black pt-16 pb-8 border-t border-white/5">
       {/* Subtle glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] max-w-full h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">

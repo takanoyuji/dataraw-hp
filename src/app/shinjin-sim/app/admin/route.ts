@@ -10,13 +10,13 @@ const MSG: Record<string, [string, boolean]> = {
   added: ["登録して、招待メールを送りました。", false],
   mailfail: ["登録しましたが、招待メールを送れませんでした。「招待を送り直す」を押してください。", true],
   dup: ["そのメールアドレスは、すでに登録されています。", true],
-  full: ["人数の上限に達しています。止めた人を外すか、運営に人数の追加をご相談ください。", true],
+  full: ["人数の上限に達しています。停止した受講者を外すか、運営に人数の追加をご相談ください。", true],
   bad: ["入力を確かめてください（メールアドレスとお名前は必須）。", true],
   resent: ["招待メールを送り直しました。", false],
-  stopped: ["止めました。この人はログインできなくなり、記録は残ります。", false],
+  stopped: ["停止しました。この受講者はログインできなくなります。記録は残ります。", false],
   started: ["再開しました。", false],
-  self: ["自分自身は止められません。", true],
-  welcome: ["無料トライアルが始まりました（5人・2週間）。下の「人を招待する」から、新人の方を招待してください。招待した方にはメールでログイン用のリンクが届きます。", false],
+  self: ["自分自身は停止できません。", true],
+  welcome: ["無料トライアルが始まりました（5人・2週間）。下の「受講者の招待」から、新人の方を招待してください。招待した方にはメールでログイン用のリンクが届きます。", false],
 };
 
 export async function GET(req: Request) {
@@ -50,55 +50,55 @@ export async function GET(req: Request) {
   const manage = members.map((m) => `<tr>
     <td>${esc(m.name)}${m.id === me.id ? '（自分）' : ""}<br><span class="sub">${esc(m.email)}</span></td>
     <td>${esc(m.dept) || "-"}</td>
-    <td>${m.role === "admin" ? "人事（管理画面）" : "遊ぶ人"}</td>
+    <td>${m.role === "admin" ? "人事（管理者）" : "受講者"}</td>
     <td>${m.status === "active" ? (m.last_login_at ? `ログイン ${jst(m.last_login_at)}` : `招待 ${jst(m.invited_at)}`) : '<span class="tag ng">停止</span>'}</td>
     <td><form method="post" action="${BASE}/admin/members/action" class="row" style="gap:6px">
       <input type="hidden" name="id" value="${m.id}">
       ${m.status === "active" && !m.last_login_at ? '<button class="btn ghost small" name="action" value="resend">招待を送り直す</button>' : ""}
-      ${m.id === me.id ? "" : m.status === "active" ? '<button class="btn ghost small" name="action" value="stop">止める</button>' : '<button class="btn ghost small" name="action" value="start">再開する</button>'}
+      ${m.id === me.id ? "" : m.status === "active" ? '<button class="btn ghost small" name="action" value="stop">停止する</button>' : '<button class="btn ghost small" name="action" value="start">再開する</button>'}
     </form></td></tr>`).join("");
 
-  return page("管理画面", `
+  return page("受講状況", `
 ${msg ? `<p class="msg${msg[1] ? " ng" : ""}">${esc(msg[0])}</p>` : ""}
 <section>
   <p class="sub">${esc(company.name)}　${esc(trial)}</p>
-  <h1>誰が、どこで詰まったか</h1>
+  <h1>受講状況</h1>
 </section>
 <section class="kpis">
-  <div class="card kpi"><span class="sub">遊ぶ人</span><b>${countActivePlayers(company.id)} / ${company.seat_limit}人</b></div>
-  <div class="card kpi"><span class="sub">遊び始めた人</span><b>${started}人</b></div>
-  <div class="card kpi"><span class="sub">全10話クリア</span><b>${done}人</b></div>
-  <div class="card kpi"><span class="sub">遊んだ回数（やり直し込み）</span><b>${all.length}回</b></div>
+  <div class="card kpi"><span class="sub">受講者</span><b>${countActivePlayers(company.id)} / ${company.seat_limit}人</b></div>
+  <div class="card kpi"><span class="sub">受講を始めた人</span><b>${started}人</b></div>
+  <div class="card kpi"><span class="sub">全10話修了</span><b>${done}人</b></div>
+  <div class="card kpi"><span class="sub">プレイ回数（やり直しを含む）</span><b>${all.length}回</b></div>
 </section>
 <section class="card">
-  <h2>全員の進み具合</h2>
-  <p class="note">★=70点以上でクリアした話（最高の★）/ ×=遊んだがまだ70点に届いていない / ・=まだ。名前を押すと、1人ずつの記録が見られます</p>
+  <h2>受講者ごとの進捗</h2>
+  <p class="note">★=70点以上でクリアした話（最高の★）/ ×=受講済み・70点未満 / ・=未受講。名前を押すと個人の記録を表示します</p>
   <div class="scroll"><table><thead><tr><th>名前</th><th>進み</th>${EPS.map((_, i) => `<th>${i + 1}</th>`).join("")}<th>回数</th><th>最後</th></tr></thead>
-  <tbody>${rows.map((r) => r.html).join("") || `<tr><td colspan="14" class="sub">まだ誰も登録されていません。下の「人を招待する」から登録してください。</td></tr>`}</tbody></table></div>
+  <tbody>${rows.map((r) => r.html).join("") || `<tr><td colspan="14" class="sub">まだ誰も登録されていません。下の「受講者の招待」から登録してください。</td></tr>`}</tbody></table></div>
 </section>
 <section class="card">
-  <h2>つまずいた人が多い場面</h2>
-  ${misses.length ? `<div class="scroll"><table><thead><tr><th>話</th><th>場面</th><th>つまずいた人</th></tr></thead><tbody>${misses.map((x) =>
+  <h2>減点が多い場面</h2>
+  ${misses.length ? `<div class="scroll"><table><thead><tr><th>話</th><th>場面</th><th>減点された人</th></tr></thead><tbody>${misses.map((x) =>
     `<tr><td>第${x.no}話</td><td class="wrap">${esc(x.why)}</td><td>${Math.round((x.people / x.of) * 100)}%（${x.people}/${x.of}人）</td></tr>`).join("")}</tbody></table></div>
-  <p class="note">分母は、その話を遊んだ人数。1回でもその場面で減点された人を数えます</p>` : '<p class="sub">まだ記録がありません。</p>'}
+  <p class="note">分母はその話を受講した人数。1回でもその場面で減点された人を数えています</p>` : '<p class="sub">まだ記録がありません。</p>'}
 </section>
 <section class="card">
-  <h2>人を招待する</h2>
+  <h2>受講者の招待</h2>
   <form class="stack" method="post" action="${BASE}/admin/members">
     <div class="row">
       <label>メールアドレス<input name="email" type="email" autocomplete="off" required></label>
       <label>お名前<input name="name" required maxlength="50"></label>
       <label>部署<input name="dept" maxlength="50" placeholder="例: 営業1課"></label>
-      <label>役割<select name="role"><option value="player">遊ぶ人</option><option value="admin">人事（管理画面も見る）</option></select></label>
+      <label>役割<select name="role"><option value="player">受講者</option><option value="admin">人事（管理者）</option></select></label>
     </div>
     <div><button class="btn" type="submit">登録して招待メールを送る</button></div>
   </form>
-  <p class="note">※招待メールのリンクは7日間有効<br>※遊ぶ人の上限は ${company.seat_limit}人。人事は数えません</p>
+  <p class="note">※招待メールのリンクは7日間有効<br>※受講者の上限は ${company.seat_limit}人（人事は含みません）</p>
 </section>
 <section class="card">
-  <h2>登録している人</h2>
+  <h2>登録者一覧</h2>
   <div class="scroll"><table><thead><tr><th>名前</th><th>部署</th><th>役割</th><th>状態</th><th></th></tr></thead><tbody>${manage}</tbody></table></div>
-  <p class="note">※止めた人はログインできなくなります。記録は消えません</p>
+  <p class="note">※停止した人はログインできなくなります。記録は消えません</p>
 </section>
 <section class="card">
   <h2>点数の扱い</h2>

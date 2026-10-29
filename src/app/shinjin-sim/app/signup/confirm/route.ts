@@ -21,13 +21,13 @@ export async function GET(req: Request) {
   const s = peekSignup(t);
   if (!s) return redirect(`${BASE}?m=signup_expired`);
   const err = q.get("e") === "phone" ? "電話番号を確かめてください（例: 03-1234-5678）。" : q.get("e") === "agree" ? "プライバシーポリシーへの同意が必要です。" : "";
-  return page("トライアルをはじめる", `
+  return page("トライアルの開始", `
 <section class="card narrow">
   <p class="sub">無料トライアル（${TRIAL_SEATS}人・${TRIAL_DAYS}日間）</p>
   <h1>${esc(s.company)}</h1>
   <p class="sub">${esc(s.name)} 様（${esc(s.email)}）を、人事のご担当として登録します。</p>
   <form class="stack" method="post" action="${BASE}/signup/confirm"><input type="hidden" name="t" value="${esc(t)}">${s.phone ? "" : phoneFields(err)}
-    <button class="btn big" type="submit">トライアルをはじめる</button></form>
+    <button class="btn big" type="submit">トライアルを開始する</button></form>
   <p class="note">※終わっても自動で有料にはなりません<br>※このブラウザでログインします。30日間はログインしたままです</p>
 </section>`);
 }

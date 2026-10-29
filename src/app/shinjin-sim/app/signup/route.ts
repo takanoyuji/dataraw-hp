@@ -33,7 +33,7 @@ export async function POST(req: Request) {
   if (!c.ok) return json({ ok: false, error: c.error }, 400);
 
   const ip = req.headers.get("x-real-ip") ?? "local";
-  if (tooMany(ip)) return json({ ok: false, error: "続けて送られています。10分ほど空けてから、もう一度お試しください。" }, 429);
+  if (tooMany(ip)) return json({ ok: false, error: "短時間に続けて送信されました。10分ほどおいてから、もう一度お試しください。" }, 429);
 
   const m = getMemberByEmail(c.v.email);
   if (m) {

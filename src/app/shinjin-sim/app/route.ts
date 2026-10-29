@@ -50,7 +50,7 @@ ${msgHtml}
   <p class="note">「モフ太の出世物語」（全10話）の結果が、会社の管理画面に残ります。ほかのモードは練習用で、記録されません。</p>
 </section>
 <section class="card">
-  <h2>自分の進み具合</h2>
+  <h2>自分の進捗</h2>
   <div class="scroll"><table><thead><tr>${EPS.map((_, i) => `<th>${i + 1}</th>`).join("")}<th>回数</th></tr></thead>
   <tbody><tr>${cells}<td>${s.plays}</td></tr></tbody></table></div>
 </section>`, { nav });

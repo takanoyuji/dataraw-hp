@@ -16,7 +16,7 @@ export async function GET(req: Request) {
   <h1>${esc(who.member.name)} さん、ようこそ</h1>
   <p class="sub">このブラウザでログインします。30日間はログインしたままです。</p>
   <form method="post" action="${BASE}/auth"><input type="hidden" name="t" value="${esc(t)}">
-    <button class="btn big" type="submit">はじめる</button></form>
+    <button class="btn big" type="submit">ログインする</button></form>
 </section>`);
 }
 

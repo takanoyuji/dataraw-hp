@@ -22,7 +22,7 @@ export async function GET(req: Request) {
     return `<tr><td>${c.id}</td><td>${esc(c.name)}${c.status !== "active" ? ' <span class="tag ng">停止</span>' : ""}<br><span class="sub">${c.source === "self" ? "LPから申込" : "運営が作成"} ${jst(c.created_at)}</span></td>
 <td>${c.plan === "trial" ? `トライアル<br><span class="sub">${jst(c.trial_ends_at)} まで</span>` : "契約"}</td><td>${c.seat_limit}人</td><td>${c.members}人</td><td>${c.attempts}回</td><td class="wrap">${admins}${c.phone ? `<br><span class="sub">電話 ${esc(c.phone)}</span>` : ""}</td>
 <td><form method="post" action="${BASE}/ops/companies" class="row" style="gap:6px"><input type="hidden" name="id" value="${c.id}">
-${c.status === "active" ? '<button class="btn ghost small" name="action" value="stop">止める</button>' : '<button class="btn ghost small" name="action" value="start">再開</button>'}
+${c.status === "active" ? '<button class="btn ghost small" name="action" value="stop">停止する</button>' : '<button class="btn ghost small" name="action" value="start">再開</button>'}
 ${c.plan === "trial" ? '<button class="btn ghost small" name="action" value="paid">契約にする</button><button class="btn ghost small" name="action" value="extend">7日延長</button>' : ""}
 <label style="flex:0 0 90px">人数<input name="seats" type="number" min="1" max="500" value="${c.seat_limit}"></label><button class="btn ghost small" name="action" value="seats">人数を変える</button>
 </form></td></tr>`;
@@ -41,7 +41,7 @@ ${msg ? `<p class="msg${msg[1] ? " ng" : ""}">${esc(msg[0])}</p>` : ""}
   </div>
   <div class="row">
     <label>トライアル日数<input name="days" type="number" min="1" max="365" value="14"></label>
-    <label>遊ぶ人の上限<input name="seats" type="number" min="1" max="500" value="5"></label>
+    <label>受講者の上限<input name="seats" type="number" min="1" max="500" value="5"></label>
   </div>
   <div><button class="btn" type="submit">作って招待メールを送る</button></div>
 </form></section>`, { nav: `<a href="/admin">dataraw.jp 管理画面</a>` });

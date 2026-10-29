@@ -39,21 +39,21 @@ ${minus.length ? `<ul>${minus.map((x) => `<li>−${x.pt}点 ${esc(x.why)}</li>`)
 
   return page(m.name, `
 <section>
-  <p class="sub"><a href="${BASE}/admin">← 全員の進み具合</a></p>
+  <p class="sub"><a href="${BASE}/admin">← 受講状況に戻る</a></p>
   <h1>${esc(m.name)} さん</h1>
-  <p class="sub">${esc(m.dept)}　${s.plays === 0 ? "未着手" : s.nextNo ? `第${s.nextNo}話まで進行中` : "全10話クリア"}　遊んだ回数 ${s.plays}回　最後 ${jst(s.last)}</p>
+  <p class="sub">${esc(m.dept)}　${s.plays === 0 ? "未着手" : s.nextNo ? `第${s.nextNo}話まで進行中` : "全10話修了"}　プレイ回数 ${s.plays}回　最後 ${jst(s.last)}</p>
 </section>
 <section class="card">
-  <h2>つまずいた場面（多い順）</h2>
+  <h2>減点された場面（多い順）</h2>
   ${misses.length ? `<div class="scroll"><table><thead><tr><th>話</th><th>場面</th><th>回数</th></tr></thead><tbody>${misses.map((x) =>
     `<tr><td>第${x.no}話</td><td class="wrap">${esc(x.why)}</td><td>×${x.times}</td></tr>`).join("")}</tbody></table></div>` : '<p class="sub">まだありません。</p>'}
 </section>
 <section class="card">
-  <h2>話ごと</h2>
+  <h2>話ごとの結果</h2>
   <div class="scroll"><table><thead><tr><th>話</th><th>題</th><th>★</th><th>最高点</th><th>回数</th></tr></thead><tbody>${eps}</tbody></table></div>
 </section>
 <section class="card">
-  <h2>すべての記録（やり直しを含む・新しい順）</h2>
+  <h2>記録一覧（やり直しを含む・新しい順）</h2>
   ${rows.length ? `<div class="scroll"><table><thead><tr><th>日時</th><th>話</th><th>結果</th><th>中身</th></tr></thead><tbody>${log}</tbody></table></div>` : '<p class="sub">まだありません。</p>'}
 </section>`, { nav: `<a href="${BASE}/admin">管理画面</a>${logoutForm()}` });
 }

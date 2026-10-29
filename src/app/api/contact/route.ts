@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hashIp } from "@/lib/comments";
 import { addInquiry, countRecentInquiries, setMailStatus, type Inquiry } from "@/lib/contact";
+import { offerSignup } from "@/lib/shinjin/signup";
 import { sendMail, smtpConfigured } from "@/lib/smtp";
 
 export const runtime = "nodejs";
@@ -15,7 +16,7 @@ function str(v: unknown, max: number): string | null {
   return s && s.length <= max ? s : null;
 }
 
-function mailText(id: number, q: Inquiry): string {
+function mailText(id: number, q: Inquiry, note?: string): string {
   const rows: [string, string | null][] = [
     ["会社名", q.company], ["お名前", q.name], ["メール", q.email], ["電話", q.phone],
     ["件名", q.subject], ["使いたい人数", q.size], ["内容", q.message],
@@ -23,6 +24,7 @@ function mailText(id: number, q: Inquiry): string {
   return [
     ...rows.filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`),
     "",
+    ...(note ? [note, ""] : []),
     `受付番号: ${id}（送り元: ${q.source}）`,
     "このメールに返信すると、お客様のアドレスに届きます。",
   ].join("\n");
@@ -62,15 +64,21 @@ export async function POST(request: NextRequest) {
 
     const id = addInquiry({ ...q, ipHash });
 
+    // 新人しごとシミュレーターの古い相談フォーム（2026-10-29 に申し込み制へ変える前のページ）から来た分は、
+    // 申込者に確認リンクを送り、リンク先で登録まで済ませてもらう
+    const note = source === "shinjin-sim"
+      ? `→ ${await offerSignup(q, request.headers.get("x-real-ip") ?? "local")}`
+      : undefined;
+
     if (!smtpConfigured()) {
       console.error(`[contact] #${id} を保存したが、SMTP の環境変数が無くメールを送れない`);
       setMailStatus(id, "not_configured");
     } else {
       const subject = source === "shinjin-sim"
-        ? `[新人しごとシミュレーター] トライアル相談 ${q.company}`
+        ? `[新人しごとシミュレーター] 旧フォームからの申し込み ${q.company}`
         : `[dataraw.jp お問い合わせ] ${q.subject} / ${q.company}`;
       try {
-        await sendMail({ subject, text: mailText(id, q), replyTo: q.email });
+        await sendMail({ subject, text: mailText(id, q, note), replyTo: q.email });
         setMailStatus(id, "sent");
       } catch (e) {
         console.error(`[contact] #${id} のメール送信に失敗:`, e instanceof Error ? e.message : e);

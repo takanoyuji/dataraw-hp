@@ -9,6 +9,7 @@ import { BASE, SITE_URL } from "./html";
  *   （存在しないアドレスや、他人のアドレスで会社が作られないため）
  * - 送りすぎ防止: 同じIP 10分に3回 / 同じメール 24時間に3回 / 全体 24時間に50通
  * - 作ったら運営（CONTACT_TO）に知らせる。トライアル終了の2日前にも知らせる
+ * - 古いLP（相談フォーム）から /api/contact に来た分も、申込者に確認リンクを送る。電話番号は確認画面で入れてもらう
  */
 
 export const TRIAL_DAYS = 14;
@@ -81,6 +82,26 @@ export async function startSignup(v: SignupInput, ip: string): Promise<void> {
   });
 }
 
+/**
+ * 古い相談フォームから来た申し込みに、確認リンクを送る（電話番号は確認画面で入れてもらう）。
+ * 運営への知らせに書くため、どうしたかを返す
+ */
+export async function offerSignup(v: { company: string; name: string; email: string }, ip: string): Promise<string> {
+  const m = getMemberByEmail(v.email);
+  if (m) {
+    const c = getCompany(m.company_id);
+    return `登録済みのメールです（会社: ${c?.name ?? "-"}）。リンクは送っていません`;
+  }
+  if (overEmailCap(v.email) || overDailyCap()) return "送りすぎ防止の上限に達したため、リンクは送っていません";
+  try {
+    await startSignup({ company: v.company.slice(0, 100), name: v.name.slice(0, 50), email: normEmail(v.email), phone: "" }, ip);
+    return "申込者にトライアル開始の確認リンクを送りました（電話番号はリンク先で入力）";
+  } catch (e) {
+    console.error("[shinjin] 確認メールの送信に失敗:", e instanceof Error ? e.message : e);
+    return "確認リンクを送れませんでした。申込者に連絡してください";
+  }
+}
+
 /** 使える確認リンクなら、申し込みの中身を返す（確認画面用。消費はしない） */
 export function peekSignup(raw: string): SignupRow | null {
   if (!raw || raw.length > 100) return null;
@@ -93,9 +114,10 @@ export function peekSignup(raw: string): SignupRow | null {
  * 確認リンクを消費して、会社と人事（admin）を作る。
  * すでに同じメールが登録済みなら作らずに "dup" を返す（その間に別の申し込みで作られた場合も含む）
  */
-export function completeSignup(raw: string): { memberId: number; company: Company } | "expired" | "dup" {
+export function completeSignup(raw: string, phone?: string): { memberId: number; company: Company } | "expired" | "dup" {
   const r = peekSignup(raw);
   if (!r) return "expired";
+  if (!r.phone && phone) r.phone = phone; // 古いフォームから来た分は、確認画面で入れた番号
   const tx = db().transaction(() => {
     const ok = db().prepare(`UPDATE signups SET used_at = ? WHERE id = ? AND used_at IS NULL`).run(now(), r.id).changes === 1;
     if (!ok) return "expired" as const;
@@ -103,7 +125,7 @@ export function completeSignup(raw: string): { memberId: number; company: Compan
     const cid = createCompany(r.company, TRIAL_DAYS, TRIAL_SEATS, { phone: r.phone, source: "self" });
     const memberId = addMember(cid, { email: r.email, name: r.name, dept: "", role: "admin" });
     db().prepare(`UPDATE members SET invited_at = ? WHERE id = ?`).run(now(), memberId);
-    db().prepare(`UPDATE signups SET company_id = ? WHERE id = ?`).run(cid, r.id);
+    db().prepare(`UPDATE signups SET company_id = ?, phone = ? WHERE id = ?`).run(cid, r.phone, r.id);
     return { memberId, company: getCompany(cid)! };
   });
   return tx();
